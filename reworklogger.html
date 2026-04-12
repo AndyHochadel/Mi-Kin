@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi-Kin Creations — Rework Logger</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a18; --ink-2:#4a4a44; --ink-3:#8a8a80;
+  --paper:#f5f3ee; --paper-2:#eceae3; --paper-3:#e0ddd4;
+  --accent:#c8410a; --accent-2:#f0e8d8; --border:#ccc9be;
+  --green:#2d7a4f; --green-bg:#e8f5ee;
+  --red:#a33; --red-bg:#fef0f0;
+  --mono:'JetBrains Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;}
+
+/* ══ HEADER — matches Pull Card exactly ══ */
+header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--accent);}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-company{font-family:var(--sans);font-weight:700;font-size:15px;color:#fff;letter-spacing:.02em;}
+.logo-company span{color:var(--accent);}
+.logo-divider{width:1px;height:22px;background:rgba(255,255,255,.15);}
+.logo-app{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.header-right{display:flex;align-items:center;gap:12px;}
+nav{display:flex;gap:4px;}
+.tab{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border:1px solid transparent;border-radius:3px;cursor:pointer;background:transparent;color:#aaa;transition:all .15s;}
+.tab:hover{color:var(--paper);}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ══ SYNC STATUS — matches Pull Card ══ */
+#sync-status{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:6px;transition:all .3s;}
+#sync-status.idle{background:rgba(255,255,255,.08);color:#888;}
+#sync-status.syncing{background:rgba(200,200,100,.15);color:#d4c44a;}
+#sync-status.ok{background:rgba(80,200,120,.15);color:#5ec97a;}
+#sync-status.err{background:rgba(220,80,80,.2);color:#f08080;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+#sync-status.syncing .sync-dot{animation:pulse .8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ══ VIEWS ══ */
+.view{display:none;padding:2rem;max-width:1100px;margin:0 auto;}
+.view.active{display:block;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);}
+.section-head h2{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);}
+.shr{display:flex;align-items:center;gap:10px;}
+.badge{font-family:var(--mono);font-size:11px;background:var(--paper-3);color:var(--ink-3);padding:2px 8px;border-radius:2px;}
+
+/* ══ BUTTONS — matches Pull Card ══ */
+.btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 16px;border-radius:3px;cursor:pointer;border:1px solid;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:#a33408;}
+.btn-primary:disabled{background:#ccc;border-color:#ccc;cursor:not-allowed;opacity:.7;}
+.btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--border);}
+.btn-ghost:hover{border-color:var(--ink-2);color:var(--ink);}
+.btn-danger{background:transparent;color:#c0392b;border-color:#e8b4b0;}
+.btn-danger:hover{background:#fdf0ef;}
+.btn-sm{padding:5px 10px;font-size:10px;}
+
+/* ══ FORMS — matches Pull Card ══ */
+.form-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.form-grid .full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+.field input,.field textarea,.field select{font-family:var(--sans);font-size:14px;padding:9px 12px;border:1px solid var(--border);border-radius:3px;background:#fff;color:var(--ink);transition:border-color .15s;outline:none;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(200,65,10,.08);}
+.field textarea{resize:vertical;min-height:100px;}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:1.5rem;border-top:1px solid var(--paper-2);margin-top:1.5rem;}
+
+/* ══ TABLE — matches Pull Card ══ */
+.table-wrap{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--paper-2);user-select:none;}
+tbody tr{border-bottom:1px solid var(--paper-2);transition:background .1s;}
+tbody tr:hover{background:var(--accent-2);}
+tbody td{padding:10px 12px;color:var(--ink-2);vertical-align:middle;}
+tbody td.mono{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}
+tbody td.primary{color:var(--ink);font-weight:500;}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--ink-3);}
+.empty-state p{font-family:var(--mono);font-size:12px;margin-top:8px;}
+
+/* ══ TOOLBAR — matches Pull Card ══ */
+.toolbar{display:flex;gap:10px;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap;}
+.toolbar input{font-family:var(--sans);font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:#fff;outline:none;flex:1;min-width:180px;max-width:320px;}
+.toolbar input:focus{border-color:var(--accent);}
+.toolbar select{font-family:var(--mono);font-size:11px;padding:8px 10px;border:1px solid var(--border);border-radius:3px;background:#fff;color:var(--ink-2);outline:none;cursor:pointer;}
+.count-label{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;}
+
+/* ══ CATEGORY PILL ══ */
+.cat-pill{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:inline-block;background:var(--paper-3);color:var(--ink-2);}
+.dept-pill{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;display:inline-block;background:var(--accent-2);color:var(--accent);}
+
+/* ══ SETTINGS — Admin ══ */
+.settings-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;}
+.settings-panel{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.panel-head{background:var(--paper-2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.panel-head-label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+.settings-body{padding:0;}
+.setting-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--paper-2);transition:background .1s;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row:hover{background:var(--paper);}
+.setting-row-name{flex:1;font-size:13px;color:var(--ink);font-weight:500;}
+.setting-row-actions{display:flex;gap:6px;}
+.setting-row input[type="text"]{font-family:var(--sans);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:3px;flex:1;outline:none;background:var(--paper);}
+.setting-row input[type="text"]:focus{border-color:var(--accent);background:#fff;}
+.add-row{display:flex;gap:10px;padding:12px 14px;border-top:1px solid var(--border);background:var(--paper);}
+.add-row input{font-family:var(--sans);font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;flex:1;outline:none;background:#fff;}
+.add-row input:focus{border-color:var(--accent);}
+.settings-empty{padding:2rem;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-3);}
+
+/* ══ ADMIN TABS ══ */
+.admin-tabs{display:flex;gap:0;margin-bottom:1.5rem;}
+.admin-tab{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;border:1px solid var(--border);background:#fff;color:var(--ink-3);cursor:pointer;transition:all .15s;}
+.admin-tab:first-child{border-radius:3px 0 0 3px;}
+.admin-tab:last-child{border-radius:0 3px 3px 0;}
+.admin-tab:not(:first-child){border-left:none;}
+.admin-tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.admin-tab:hover:not(.active){color:var(--ink);background:var(--paper-2);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ══ TOAST — matches Pull Card ══ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;padding:10px 20px;border-radius:4px;z-index:600;transition:transform .25s ease;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.terr{background:#8b2020;}
+#toast.tok{background:var(--green);}
+
+/* ══ LOADING — matches Pull Card ══ */
+.loading-overlay{position:fixed;inset:0;background:rgba(245,243,238,.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-overlay.hidden{display:none;}
+.spinner{width:36px;height:36px;border:3px solid var(--paper-3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay p{font-family:var(--mono);font-size:12px;color:var(--ink-3);}
+
+/* ══ SCROLL CONTAINER ══ */
+.scroll-x{overflow-x:auto;}
+
+/* ══ DESCRIPTION CELL ══ */
+.desc-cell{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.desc-cell.expanded{white-space:normal;word-break:break-word;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px){
+  header{padding:0 1rem;height:auto;min-height:56px;flex-wrap:wrap;gap:8px;padding-top:10px;padding-bottom:10px;}
+  .header-right{width:100%;justify-content:space-between;}
+  nav{flex-wrap:wrap;gap:4px;}
+  .view{padding:1.25rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .settings-layout{grid-template-columns:1fr;}
+  .toolbar{flex-direction:column;align-items:stretch;}
+  .toolbar input{max-width:none;}
+  .count-label{margin-left:0;}
+  table{font-size:12px;}
+  thead th,tbody td{padding:8px 10px;}
+}
+@media(max-width:500px){
+  .tab{font-size:10px;padding:5px 10px;}
+  .admin-tabs{flex-direction:column;}
+  .admin-tab{border-radius:3px!important;border-left:1px solid var(--border)!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><p>Loading from Google Sheets…</p></div>
+<div id="toast"></div>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">
+    <div class="logo-company">Mi-<span>Kin</span> Creations</div>
+    <div class="logo-divider"></div>
+    <div class="logo-app">Rework Logger</div>
+  </div>
+  <div class="header-right">
+    <div id="sync-status" class="idle"><span class="sync-dot"></span><span id="sync-label">Synced</span></div>
+    <nav>
+      <button class="tab active" onclick="showView('floor')">Log Rework</button>
+      <button class="tab" onclick="showView('admin')">Admin</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- FLOOR VIEW — Shop Floor Logging Form                                 -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div id="v-floor" class="view active">
+  <div class="section-head">
+    <h2>Log a Rework Issue</h2>
+  </div>
+
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="field">
+        <label for="woNum">Work Order #</label>
+        <input type="text" id="woNum" placeholder="e.g., WO-2024-001">
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="">Select a category…</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label for="description">Description of Problem</label>
+        <textarea id="description" placeholder="Describe the issue in detail…"></textarea>
+      </div>
+      <div class="field">
+        <label for="deptFound">Department That Found Issue</label>
+        <select id="deptFound">
+          <option value="">Select department…</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="deptToFix">Department to Fix</label>
+        <select id="deptToFix">
+          <option value="">Select department…</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="estTime">Estimated Time to Fix (HH:MM)</label>
+        <input type="text" id="estTime" placeholder="e.g., 0:30" maxlength="5" oninput="formatDuration(this)">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" type="button" onclick="resetForm()">Clear</button>
+      <button class="btn btn-primary" type="button" onclick="submitRework()" id="submitBtn">▸ Log Rework</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ADMIN VIEW — Data Table + Settings                                   -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div id="v-admin" class="view">
+  <!-- Password Gate -->
+  <div id="adminGate">
+    <div class="form-card" style="max-width:400px;margin:4rem auto;text-align:center;">
+      <div style="font-size:28px;margin-bottom:12px;">🔒</div>
+      <h2 style="font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px;">Admin Access</h2>
+      <p style="font-size:13px;color:var(--ink-3);margin-bottom:1.5rem;">Enter the password to access admin tools.</p>
+      <div class="field" style="margin-bottom:1rem;">
+        <input type="password" id="adminPass" placeholder="Password" onkeydown="if(event.key==='Enter')checkAdminPass()" style="text-align:center;font-size:16px;letter-spacing:.15em;">
+      </div>
+      <p id="passError" style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:1rem;display:none;">Incorrect password</p>
+      <button class="btn btn-primary" onclick="checkAdminPass()" style="width:100%;justify-content:center;">Unlock</button>
+    </div>
+  </div>
+
+  <!-- Admin Content (hidden until unlocked) -->
+  <div id="adminContent" style="display:none;">
+  <div class="section-head">
+    <h2>Rework Administration</h2>
+    <div class="shr">
+      <span class="badge" id="totalBadge">0 entries</span>
+    </div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchAdminTab('data',this)">Rework Data</button>
+    <button class="admin-tab" onclick="switchAdminTab('settings',this)">Settings</button>
+  </div>
+
+  <!-- Data Tab -->
+  <div id="tab-data" class="tab-panel active">
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Search by WO#, category, department…" oninput="filterTable()">
+      <select id="filterCat" onchange="filterTable()">
+        <option value="">All Categories</option>
+      </select>
+      <select id="filterDept" onchange="filterTable()">
+        <option value="">All Departments</option>
+      </select>
+      <span class="count-label" id="countLabel">0 shown</span>
+    </div>
+    <div class="toolbar" style="margin-top:-0.75rem;">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="scroll-x">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>WO #</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Found By</th>
+              <th>Fix Dept</th>
+              <th>Est. Time</th>
+              <th style="width:70px;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="reworksBody">
+            <tr><td colspan="8" class="empty-state"><p>Loading rework data…</p></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div id="tab-settings" class="tab-panel">
+    <div class="settings-layout">
+      <!-- Categories Panel -->
+      <div class="settings-panel">
+        <div class="panel-head">
+          <span class="panel-head-label">Categories</span>
+          <span class="badge" id="catCount">0</span>
+        </div>
+        <div class="settings-body" id="categoriesList"></div>
+        <div class="add-row">
+          <input type="text" id="newCategory" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCategory()">
+          <button class="btn btn-primary btn-sm" onclick="addCategory()">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Departments Panel -->
+      <div class="settings-panel">
+        <div class="panel-head">
+          <span class="panel-head-label">Departments</span>
+          <span class="badge" id="deptCount">0</span>
+        </div>
+        <div class="settings-body" id="departmentsList"></div>
+        <div class="add-row">
+          <input type="text" id="newDepartment" placeholder="New department name…" onkeydown="if(event.key==='Enter')addDepartment()">
+          <button class="btn btn-primary btn-sm" onclick="addDepartment()">+ Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /adminContent -->
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcuVxCAXftMEFfa9-3FII334lSUixH0JGy5tFCNbXX-sWpSIsHtZuQuvb6GBrUdkuPmA/exec';
+
+// ── State ──
+let allReworks = [];
+let allCategories = [];
+let allDepartments = [];
+let adminUnlocked = false;
+const ADMIN_PASS = '1055';
+
+// ── Password Gate ──
+function checkAdminPass() {
+  const input = document.getElementById('adminPass');
+  if(input.value === ADMIN_PASS) {
+    adminUnlocked = true;
+    document.getElementById('adminGate').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    renderReworksTable();
+    toast('Admin unlocked','ok');
+  } else {
+    document.getElementById('passError').style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+// ── Init ──
+async function init() {
+  try {
+    setSync('syncing','Loading…');
+    await Promise.all([loadCategories(), loadDepartments()]);
+    await loadReworks();
+    setSync('ok','Synced');
+    hideLoading();
+  } catch(e) {
+    setSync('err','Error');
+    hideLoading();
+    toast('Failed to load data — check your connection','err');
+  }
+}
+
+// ── View switching ──
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('nav .tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  const tabs = document.querySelectorAll('nav .tab');
+  if(id==='floor') tabs[0].classList.add('active');
+  if(id==='admin') { 
+    tabs[1].classList.add('active'); 
+    if(adminUnlocked) { renderReworksTable(); }
+    else { document.getElementById('adminPass').focus(); }
+  }
+}
+
+// ── Admin tabs ──
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='settings') { renderCategories(); renderDepartments(); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════════════════════════════
+
+async function apiFetch(action, params={}) {
+  const body = new URLSearchParams({action, ...params});
+  const resp = await fetch(SCRIPT_URL, {method:'POST', body});
+  return resp.json();
+}
+
+async function loadCategories() {
+  allCategories = await apiFetch('getCategories');
+  populateSelect('category', allCategories, 'Select a category…');
+  populateFilterSelect('filterCat', allCategories, 'All Categories');
+}
+
+async function loadDepartments() {
+  allDepartments = await apiFetch('getDepartments');
+  populateSelect('deptFound', allDepartments, 'Select department…');
+  populateSelect('deptToFix', allDepartments, 'Select department…');
+  populateFilterSelect('filterDept', allDepartments, 'All Departments');
+}
+
+async function loadReworks() {
+  allReworks = await apiFetch('getReworks');
+  document.getElementById('totalBadge').textContent = allReworks.length + ' entries';
+  renderReworksTable();
+}
+
+function populateSelect(id, items, placeholder) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<option value="">'+placeholder+'</option>';
+  items.forEach(item => {
+    const o = document.createElement('option');
+    o.value = item; o.textContent = item;
+    el.appendChild(o);
+  });
+}
+
+function populateFilterSelect(id, items, placeholder) {
+  const el = document.getElementById(id);
+  const val = el.value;
+  el.innerHTML = '<option value="">'+placeholder+'</option>';
+  items.forEach(item => {
+    const o = document.createElement('option');
+    o.value = item; o.textContent = item;
+    el.appendChild(o);
+  });
+  el.value = val;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// FLOOR — SUBMIT REWORK
+// ══════════════════════════════════════════════════════════════════════════
+
+async function submitRework() {
+  const woNum = document.getElementById('woNum').value.trim();
+  const category = document.getElementById('category').value;
+  const description = document.getElementById('description').value.trim();
+  const deptFound = document.getElementById('deptFound').value;
+  const deptToFix = document.getElementById('deptToFix').value;
+  const estTime = document.getElementById('estTime').value;
+
+  if(!woNum || !category || !description || !deptFound || !deptToFix) {
+    toast('Please fill in all required fields','err');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  setSync('syncing','Saving…');
+
+  try {
+    const result = await apiFetch('addRework', {woNum, category, description, deptFound, deptToFix, estTime});
+    if(result.success) {
+      toast('Rework logged successfully','ok');
+      resetForm();
+      allReworks.push({timestamp: new Date().toLocaleString('en-US'), woNum, category, description, deptFound, deptToFix, estTime});
+      document.getElementById('totalBadge').textContent = allReworks.length + ' entries';
+      setSync('ok','Synced');
+    } else {
+      toast('Error logging rework','err');
+      setSync('err','Error');
+    }
+  } catch(e) {
+    toast('Network error — try again','err');
+    setSync('err','Error');
+  }
+  btn.disabled = false;
+  btn.textContent = '▸ Log Rework';
+}
+
+function resetForm() {
+  document.getElementById('woNum').value = '';
+  document.getElementById('category').value = '';
+  document.getElementById('description').value = '';
+  document.getElementById('deptFound').value = '';
+  document.getElementById('deptToFix').value = '';
+  document.getElementById('estTime').value = '';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — REWORKS TABLE
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderReworksTable() {
+  const tbody = document.getElementById('reworksBody');
+  const search = (document.getElementById('searchInput').value||'').toLowerCase();
+  const catFilter = document.getElementById('filterCat').value;
+  const deptFilter = document.getElementById('filterDept').value;
+
+  let filtered = allReworks.filter((r,i) => {
+    r._idx = i; // store original index for delete
+    const text = [r.woNum, r.category, r.description, r.deptFound, r.deptToFix].join(' ').toLowerCase();
+    if(search && !text.includes(search)) return false;
+    if(catFilter && r.category !== catFilter) return false;
+    if(deptFilter && (r.deptFound !== deptFilter && r.deptToFix !== deptFilter)) return false;
+    return true;
+  });
+
+  document.getElementById('countLabel').textContent = filtered.length + ' shown';
+
+  if(filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><p>No rework entries found.</p></td></tr>';
+    return;
+  }
+
+  // Newest first
+  const rows = [...filtered].reverse();
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td style="white-space:nowrap;font-size:12px;">${escHtml(r.timestamp)}</td>
+      <td class="mono">${escHtml(r.woNum)}</td>
+      <td><span class="cat-pill">${escHtml(r.category)}</span></td>
+      <td class="desc-cell" onclick="this.classList.toggle('expanded')" title="Click to expand">${escHtml(r.description)}</td>
+      <td><span class="dept-pill">${escHtml(r.deptFound)}</span></td>
+      <td><span class="dept-pill">${escHtml(r.deptToFix)}</span></td>
+      <td style="font-family:var(--mono);font-size:12px;">${escHtml(r.estTime)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteRework(${r._idx})">Delete</button></td>
+    </tr>
+  `).join('');
+}
+
+function filterTable() { renderReworksTable(); }
+
+async function deleteRework(index) {
+  if(!confirm('Delete this rework entry?')) return;
+  setSync('syncing','Deleting…');
+  try {
+    // Apps Script expects 1-based row (header is row 1, data starts row 2)
+    const result = await apiFetch('deleteRework', {rowIndex: String(index + 1)});
+    if(result.success) {
+      allReworks.splice(index, 1);
+      document.getElementById('totalBadge').textContent = allReworks.length + ' entries';
+      renderReworksTable();
+      toast('Entry deleted','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) {
+    toast('Error deleting entry','err');
+    setSync('err','Error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — SETTINGS: CATEGORIES
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderCategories() {
+  const list = document.getElementById('categoriesList');
+  document.getElementById('catCount').textContent = allCategories.length;
+  if(allCategories.length === 0) {
+    list.innerHTML = '<div class="settings-empty">No categories yet — add one below.</div>';
+    return;
+  }
+  list.innerHTML = allCategories.map(cat => `
+    <div class="setting-row">
+      <span class="setting-row-name">${escHtml(cat)}</span>
+      <div class="setting-row-actions">
+        <button class="btn btn-ghost btn-sm" onclick="renameCategory('${escAttr(cat)}')">Rename</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${escAttr(cat)}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addCategory() {
+  const input = document.getElementById('newCategory');
+  const name = input.value.trim();
+  if(!name) return;
+  setSync('syncing','Saving…');
+  try {
+    const result = await apiFetch('addCategory', {name});
+    if(result.success) {
+      input.value = '';
+      allCategories.push(name);
+      renderCategories();
+      populateSelect('category', allCategories, 'Select a category…');
+      populateFilterSelect('filterCat', allCategories, 'All Categories');
+      toast('Category added','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error adding category','err'); setSync('err','Error'); }
+}
+
+async function renameCategory(oldName) {
+  const newName = prompt('Rename category:', oldName);
+  if(!newName || newName.trim() === oldName) return;
+  setSync('syncing','Saving…');
+  try {
+    const result = await apiFetch('updateCategory', {oldName, newName: newName.trim()});
+    if(result.success) {
+      const idx = allCategories.indexOf(oldName);
+      if(idx>-1) allCategories[idx] = newName.trim();
+      renderCategories();
+      populateSelect('category', allCategories, 'Select a category…');
+      populateFilterSelect('filterCat', allCategories, 'All Categories');
+      toast('Category renamed','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error renaming category','err'); setSync('err','Error'); }
+}
+
+async function deleteCategory(name) {
+  if(!confirm('Delete category "'+name+'"?')) return;
+  setSync('syncing','Deleting…');
+  try {
+    const result = await apiFetch('deleteCategory', {name});
+    if(result.success) {
+      allCategories = allCategories.filter(c=>c!==name);
+      renderCategories();
+      populateSelect('category', allCategories, 'Select a category…');
+      populateFilterSelect('filterCat', allCategories, 'All Categories');
+      toast('Category deleted','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error deleting category','err'); setSync('err','Error'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — SETTINGS: DEPARTMENTS
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderDepartments() {
+  const list = document.getElementById('departmentsList');
+  document.getElementById('deptCount').textContent = allDepartments.length;
+  if(allDepartments.length === 0) {
+    list.innerHTML = '<div class="settings-empty">No departments yet — add one below.</div>';
+    return;
+  }
+  list.innerHTML = allDepartments.map(dept => `
+    <div class="setting-row">
+      <span class="setting-row-name">${escHtml(dept)}</span>
+      <div class="setting-row-actions">
+        <button class="btn btn-ghost btn-sm" onclick="renameDepartment('${escAttr(dept)}')">Rename</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteDepartment('${escAttr(dept)}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addDepartment() {
+  const input = document.getElementById('newDepartment');
+  const name = input.value.trim();
+  if(!name) return;
+  setSync('syncing','Saving…');
+  try {
+    const result = await apiFetch('addDepartment', {name});
+    if(result.success) {
+      input.value = '';
+      allDepartments.push(name);
+      renderDepartments();
+      populateSelect('deptFound', allDepartments, 'Select department…');
+      populateSelect('deptToFix', allDepartments, 'Select department…');
+      populateFilterSelect('filterDept', allDepartments, 'All Departments');
+      toast('Department added','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error adding department','err'); setSync('err','Error'); }
+}
+
+async function renameDepartment(oldName) {
+  const newName = prompt('Rename department:', oldName);
+  if(!newName || newName.trim() === oldName) return;
+  setSync('syncing','Saving…');
+  try {
+    const result = await apiFetch('updateDepartment', {oldName, newName: newName.trim()});
+    if(result.success) {
+      const idx = allDepartments.indexOf(oldName);
+      if(idx>-1) allDepartments[idx] = newName.trim();
+      renderDepartments();
+      populateSelect('deptFound', allDepartments, 'Select department…');
+      populateSelect('deptToFix', allDepartments, 'Select department…');
+      populateFilterSelect('filterDept', allDepartments, 'All Departments');
+      toast('Department renamed','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error renaming department','err'); setSync('err','Error'); }
+}
+
+async function deleteDepartment(name) {
+  if(!confirm('Delete department "'+name+'"?')) return;
+  setSync('syncing','Deleting…');
+  try {
+    const result = await apiFetch('deleteDepartment', {name});
+    if(result.success) {
+      allDepartments = allDepartments.filter(d=>d!==name);
+      renderDepartments();
+      populateSelect('deptFound', allDepartments, 'Select department…');
+      populateSelect('deptToFix', allDepartments, 'Select department…');
+      populateFilterSelect('filterDept', allDepartments, 'All Departments');
+      toast('Department deleted','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error deleting department','err'); setSync('err','Error'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════════════════════════════════════
+
+function exportCSV() {
+  if(allReworks.length === 0) { toast('No data to export','err'); return; }
+  const headers = ['Timestamp','WO #','Category','Description','Dept Found','Dept to Fix','Est. Time'];
+  const rows = allReworks.map(r =>
+    [r.timestamp, r.woNum, r.category, r.description, r.deptFound, r.deptToFix, r.estTime]
+      .map(v => '"' + String(v||'').replace(/"/g,'""') + '"')
+      .join(',')
+  );
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rework_log_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV downloaded','ok');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════════════════
+
+function setSync(state, label) {
+  const el = document.getElementById('sync-status');
+  el.className = state;
+  document.getElementById('sync-label').textContent = label;
+}
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type==='err'?'terr show':type==='ok'?'tok show':'show';
+  setTimeout(()=>{ el.className = ''; }, 3000);
+}
+
+function hideLoading() {
+  document.getElementById('loading').classList.add('hidden');
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s||'';
+  return d.innerHTML;
+}
+
+function escAttr(s) {
+  return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+function formatDuration(el) {
+  let v = el.value.replace(/[^0-9:]/g,'');
+  if(v.length===2 && !v.includes(':') && !el._backspace) v += ':';
+  el._backspace = false;
+  el.value = v;
+}
+document.getElementById('estTime').addEventListener('keydown', function(e){
+  this._backspace = e.key==='Backspace';
+});
+
+// ── Go ──
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
