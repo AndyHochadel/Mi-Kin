@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi-Kin Creations — Shop Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a18; --ink-2:#4a4a44; --ink-3:#8a8a80;
+  --paper:#f5f3ee; --paper-2:#eceae3; --paper-3:#e0ddd4;
+  --accent:#c8410a; --accent-2:#f0e8d8; --border:#ccc9be;
+  --green:#2d7a4f; --green-bg:#e8f5ee;
+  --mono:'JetBrains Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ══ HEADER ══ */
+header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--accent);}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-company{font-family:var(--sans);font-weight:700;font-size:15px;color:#fff;letter-spacing:.02em;}
+.logo-company span{color:var(--accent);}
+.logo-divider{width:1px;height:22px;background:rgba(255,255,255,.15);}
+.logo-app{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+
+/* ══ HERO ══ */
+.hero{padding:3.5rem 2rem 2.5rem;max-width:900px;margin:0 auto;width:100%;text-align:center;}
+.hero h1{font-family:var(--mono);font-size:28px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin-bottom:8px;}
+.hero h1 .accent{color:var(--accent);}
+.hero p{font-size:15px;color:var(--ink-2);line-height:1.6;max-width:520px;margin:0 auto;}
+
+/* ══ DIVIDER ══ */
+.divider{max-width:900px;margin:0 auto;width:100%;padding:0 2rem;}
+.divider-line{border:none;border-top:1px solid var(--border);margin:0;}
+
+/* ══ TOOLS GRID ══ */
+.tools-section{max-width:900px;margin:0 auto;width:100%;padding:2rem 2rem 4rem;}
+.tools-label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:1.25rem;}
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+
+/* ══ TOOL CARD ══ */
+.tool-card{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all .2s ease;display:flex;flex-direction:column;text-decoration:none;color:inherit;position:relative;}
+.tool-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);border-color:var(--accent);transform:translateY(-2px);}
+.tool-card:active{transform:translateY(0);}
+
+.card-header{padding:1.5rem 1.5rem 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.card-icon{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.card-icon.orange{background:var(--accent-2);color:var(--accent);}
+.card-icon.green{background:var(--green-bg);color:var(--green);}
+.card-icon.blue{background:#e8f0fa;color:#2d5a9f;}
+.card-icon.purple{background:#f0e8f5;color:#6b3fa0;}
+
+.card-status{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:10px;flex-shrink:0;margin-top:4px;}
+.card-status.live{background:var(--green-bg);color:var(--green);}
+.card-status.dev{background:#fff3e0;color:#b45309;}
+.card-status.planned{background:var(--paper-3);color:var(--ink-3);}
+
+.card-body{padding:1rem 1.5rem 1.5rem;flex:1;display:flex;flex-direction:column;}
+.card-title{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;}
+.card-desc{font-size:13px;color:var(--ink-2);line-height:1.55;flex:1;}
+
+.card-footer{padding:0 1.5rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.card-tag{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--paper-2);color:var(--ink-3);}
+.card-arrow{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;transition:transform .2s;}
+.tool-card:hover .card-arrow{transform:translateX(3px);}
+
+/* Disabled card */
+.tool-card.disabled{opacity:.55;pointer-events:none;}
+.tool-card.disabled:hover{box-shadow:0 1px 3px rgba(0,0,0,.06);border-color:var(--border);transform:none;}
+
+/* ══ FOOTER ══ */
+footer{margin-top:auto;padding:1.5rem 2rem;border-top:1px solid var(--border);text-align:center;}
+footer p{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-3);}
+
+/* ══ FADE-IN ANIMATION ══ */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.hero{animation:fadeUp .5s ease both;}
+.tools-section{animation:fadeUp .5s ease .1s both;}
+.tool-card:nth-child(1){animation:fadeUp .4s ease .2s both;}
+.tool-card:nth-child(2){animation:fadeUp .4s ease .3s both;}
+.tool-card:nth-child(3){animation:fadeUp .4s ease .4s both;}
+.tool-card:nth-child(4){animation:fadeUp .4s ease .5s both;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:640px){
+  header{padding:0 1rem;}
+  .hero{padding:2.5rem 1.25rem 2rem;}
+  .hero h1{font-size:22px;}
+  .tools-section{padding:1.5rem 1.25rem 3rem;}
+  .tools-grid{grid-template-columns:1fr;}
+  .card-header{padding:1.25rem 1.25rem 0;}
+  .card-body{padding:0.75rem 1.25rem 1.25rem;}
+  .card-footer{padding:0 1.25rem 1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">
+    <div class="logo-company">Mi-<span>Kin</span> Creations</div>
+    <div class="logo-divider"></div>
+    <div class="logo-app">Shop Tools</div>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <h1>Shop Floor <span class="accent">Tools</span></h1>
+  <p>Internal applications for inventory management, quality tracking, and continuous improvement at Mi-Kin Creations.</p>
+</div>
+
+<div class="divider"><hr class="divider-line"></div>
+
+<!-- ══ TOOLS ══ -->
+<div class="tools-section">
+  <div class="tools-label">Applications</div>
+  <div class="tools-grid">
+
+    <!-- Pull Card Manager -->
+    <a href="pullcard.html" class="tool-card">
+      <div class="card-header">
+        <div class="card-icon orange">📇</div>
+        <span class="card-status live">Live</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Pull Card Manager</div>
+        <div class="card-desc">Kanban inventory pull cards. Create, print, and manage cards for shop floor parts and materials. Track reorder history and export data.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Inventory</span>
+          <span class="card-tag">Kanban</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Rework Logger -->
+    <a href="reworklogger.html" class="tool-card">
+      <div class="card-header">
+        <div class="card-icon green">📋</div>
+        <span class="card-status live">Live</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Rework Logger</div>
+        <div class="card-desc">Log and track rework issues by department. Identify patterns in quality problems and measure time spent on fixes.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Quality</span>
+          <span class="card-tag">Tracking</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Placeholder: 5S Audit -->
+    <div class="tool-card disabled">
+      <div class="card-header">
+        <div class="card-icon blue">✅</div>
+        <span class="card-status planned">Planned</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">5S Audit Checklist</div>
+        <div class="card-desc">Standardized audit tool for Sort, Set in Order, Shine, Standardize, and Sustain evaluations across work areas.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">5S</span>
+          <span class="card-tag">Audit</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+    </div>
+
+    <!-- Placeholder: Future Tool -->
+    <div class="tool-card disabled">
+      <div class="card-header">
+        <div class="card-icon purple">⚙️</div>
+        <span class="card-status planned">Planned</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Coming Soon</div>
+        <div class="card-desc">More tools on the way. Got an idea for the shop floor? Let's build it.</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">TBD</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p>Mi-Kin Creations · Internal Use · Built with Google Sheets</p>
+</footer>
+
+</body>
+</html>
