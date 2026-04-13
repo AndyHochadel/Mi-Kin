@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi-Kin Creations — Documents</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a18; --ink-2:#4a4a44; --ink-3:#8a8a80;
+  --paper:#f5f3ee; --paper-2:#eceae3; --paper-3:#e0ddd4;
+  --accent:#c8410a; --accent-2:#f0e8d8; --border:#ccc9be;
+  --green:#2d7a4f; --green-bg:#e8f5ee;
+  --red:#a33; --red-bg:#fef0f0;
+  --mono:'JetBrains Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;}
+
+/* ══ HEADER ══ */
+header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--accent);}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-company{font-family:var(--sans);font-weight:700;font-size:15px;color:#fff;letter-spacing:.02em;}
+.logo-company span{color:var(--accent);}
+.logo-divider{width:1px;height:22px;background:rgba(255,255,255,.15);}
+.logo-app{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.header-right{display:flex;align-items:center;gap:12px;}
+nav{display:flex;gap:4px;}
+.tab{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border:1px solid transparent;border-radius:3px;cursor:pointer;background:transparent;color:#aaa;transition:all .15s;}
+.tab:hover{color:var(--paper);}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ══ SYNC ══ */
+#sync-status{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:6px;transition:all .3s;}
+#sync-status.idle{background:rgba(255,255,255,.08);color:#888;}
+#sync-status.syncing{background:rgba(200,200,100,.15);color:#d4c44a;}
+#sync-status.ok{background:rgba(80,200,120,.15);color:#5ec97a;}
+#sync-status.err{background:rgba(220,80,80,.2);color:#f08080;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+#sync-status.syncing .sync-dot{animation:pulse .8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ══ VIEWS ══ */
+.view{display:none;padding:2rem;max-width:1100px;margin:0 auto;}
+.view.active{display:block;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);}
+.section-head h2{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);}
+.shr{display:flex;align-items:center;gap:10px;}
+.badge{font-family:var(--mono);font-size:11px;background:var(--paper-3);color:var(--ink-3);padding:2px 8px;border-radius:2px;}
+
+/* ══ BUTTONS ══ */
+.btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 16px;border-radius:3px;cursor:pointer;border:1px solid;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:#a33408;}
+.btn-primary:disabled{background:#ccc;border-color:#ccc;cursor:not-allowed;opacity:.7;}
+.btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--border);}
+.btn-ghost:hover{border-color:var(--ink-2);color:var(--ink);}
+.btn-danger{background:transparent;color:#c0392b;border-color:#e8b4b0;}
+.btn-danger:hover{background:#fdf0ef;}
+.btn-sm{padding:5px 10px;font-size:10px;}
+
+/* ══ FORMS ══ */
+.form-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.form-grid .full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+.field input,.field textarea,.field select{font-family:var(--sans);font-size:14px;padding:9px 12px;border:1px solid var(--border);border-radius:3px;background:#fff;color:var(--ink);transition:border-color .15s;outline:none;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(200,65,10,.08);}
+.field textarea{resize:vertical;min-height:80px;}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:1.5rem;border-top:1px solid var(--paper-2);margin-top:1.5rem;}
+
+/* ══ FILE UPLOAD ══ */
+.file-drop{border:1.5px dashed var(--border);border-radius:3px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--paper);transition:all .15s;}
+.file-drop:hover,.file-drop.dragover{border-color:var(--accent);background:var(--accent-2);}
+.file-drop p{font-size:13px;color:var(--ink-3);margin-top:6px;}
+.file-drop strong{font-family:var(--mono);font-size:11px;color:var(--ink-2);}
+.file-drop input{display:none;}
+.file-drop .file-name{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;margin-top:8px;}
+
+/* ══ TOOLBAR ══ */
+.toolbar{display:flex;gap:10px;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap;}
+.toolbar input{font-family:var(--sans);font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:#fff;outline:none;flex:1;min-width:180px;max-width:320px;}
+.toolbar input:focus{border-color:var(--accent);}
+.toolbar select{font-family:var(--mono);font-size:11px;padding:8px 10px;border:1px solid var(--border);border-radius:3px;background:#fff;color:var(--ink-2);outline:none;cursor:pointer;}
+.count-label{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;}
+
+/* ══ DOCUMENT CARDS ══ */
+.category-group{margin-bottom:2rem;}
+.category-label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.doc-list{display:flex;flex-direction:column;gap:8px;}
+.doc-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:1rem 1.25rem;display:flex;align-items:center;gap:16px;transition:all .15s;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;text-decoration:none;color:inherit;}
+.doc-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.08);transform:translateY(-1px);}
+.doc-icon{width:40px;height:40px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--accent-2);color:var(--accent);}
+.doc-icon.pdf{background:#fdecea;color:#c0392b;}
+.doc-icon.xls{background:#e8f5ee;color:var(--green);}
+.doc-icon.img{background:#e8f0fa;color:#2d5a9f;}
+.doc-info{flex:1;min-width:0;}
+.doc-name{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.doc-desc{font-size:12px;color:var(--ink-3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.doc-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.doc-date{font-family:var(--mono);font-size:10px;color:var(--ink-3);}
+.doc-cat-pill{font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--paper-3);color:var(--ink-2);white-space:nowrap;}
+.doc-arrow{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;flex-shrink:0;transition:transform .15s;}
+.doc-card:hover .doc-arrow{transform:translateX(2px);}
+
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--ink-3);}
+.empty-state p{font-family:var(--mono);font-size:12px;margin-top:8px;}
+
+/* ══ ADMIN TABLE ══ */
+.table-wrap{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--paper-2);}
+tbody tr{border-bottom:1px solid var(--paper-2);transition:background .1s;}
+tbody tr:hover{background:var(--accent-2);}
+tbody td{padding:10px 12px;color:var(--ink-2);vertical-align:middle;}
+
+/* ══ SETTINGS PANELS ══ */
+.settings-panel{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;max-width:500px;}
+.panel-head{background:var(--paper-2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.panel-head-label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+.setting-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--paper-2);transition:background .1s;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row:hover{background:var(--paper);}
+.setting-row-name{flex:1;font-size:13px;color:var(--ink);font-weight:500;}
+.add-row{display:flex;gap:10px;padding:12px 14px;border-top:1px solid var(--border);background:var(--paper);}
+.add-row input{font-family:var(--sans);font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;flex:1;outline:none;background:#fff;}
+.add-row input:focus{border-color:var(--accent);}
+
+/* ══ ADMIN TABS ══ */
+.admin-tabs{display:flex;gap:0;margin-bottom:1.5rem;}
+.admin-tab{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;border:1px solid var(--border);background:#fff;color:var(--ink-3);cursor:pointer;transition:all .15s;}
+.admin-tab:first-child{border-radius:3px 0 0 3px;}
+.admin-tab:last-child{border-radius:0 3px 3px 0;}
+.admin-tab:not(:first-child){border-left:none;}
+.admin-tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.admin-tab:hover:not(.active){color:var(--ink);background:var(--paper-2);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;padding:10px 20px;border-radius:4px;z-index:600;transition:transform .25s ease;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.terr{background:#8b2020;}
+#toast.tok{background:var(--green);}
+
+/* ══ LOADING ══ */
+.loading-overlay{position:fixed;inset:0;background:rgba(245,243,238,.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-overlay.hidden{display:none;}
+.spinner{width:36px;height:36px;border:3px solid var(--paper-3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay p{font-family:var(--mono);font-size:12px;color:var(--ink-3);}
+
+/* ══ PROGRESS BAR ══ */
+.upload-progress{display:none;margin-top:12px;}
+.upload-progress.active{display:block;}
+.progress-bar{height:6px;background:var(--paper-3);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s;width:0%;}
+.progress-label{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-top:4px;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px){
+  header{padding:0 1rem;height:auto;min-height:56px;flex-wrap:wrap;gap:8px;padding-top:10px;padding-bottom:10px;}
+  .header-right{width:100%;justify-content:space-between;}
+  nav{flex-wrap:wrap;gap:4px;}
+  .view{padding:1.25rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .toolbar{flex-direction:column;align-items:stretch;}
+  .toolbar input{max-width:none;}
+  .count-label{margin-left:0;}
+  .doc-card{flex-wrap:wrap;}
+  .doc-meta{flex-direction:row;align-items:center;gap:8px;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><p>Loading documents…</p></div>
+<div id="toast"></div>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">
+    <a href="index.html" style="text-decoration:none;color:#aaa;font-size:13px;margin-right:10px;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'" title="Back to Dashboard">←</a>
+    <img src="logo-white.png" alt="Mi-Kin" style="height:26px;width:auto;margin-right:4px;">
+    <div class="logo-company">Mi-<span>Kin</span> Creations</div>
+    <div class="logo-divider"></div>
+    <div class="logo-app">Documents</div>
+  </div>
+  <div class="header-right">
+    <div id="sync-status" class="idle"><span class="sync-dot"></span><span id="sync-label">Synced</span></div>
+    <nav>
+      <button class="tab active" onclick="showView('library')">Library</button>
+      <button class="tab" onclick="showView('admin')">Admin</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- LIBRARY VIEW — Public, all employees                                 -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div id="v-library" class="view active">
+  <div class="section-head">
+    <h2>Document Library</h2>
+    <div class="shr"><span class="badge" id="docCount">0 documents</span></div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="searchDocs" placeholder="Search documents…" oninput="renderLibrary()">
+    <select id="filterCat" onchange="renderLibrary()">
+      <option value="">All Categories</option>
+    </select>
+    <span class="count-label" id="shownCount">0 shown</span>
+  </div>
+
+  <div id="libraryContent"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- ADMIN VIEW — Password protected                                      -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<div id="v-admin" class="view">
+  <!-- Password Gate -->
+  <div id="adminGate">
+    <div class="form-card" style="max-width:400px;margin:4rem auto;text-align:center;">
+      <div style="font-size:28px;margin-bottom:12px;">🔒</div>
+      <h2 style="font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px;">Admin Access</h2>
+      <p style="font-size:13px;color:var(--ink-3);margin-bottom:1.5rem;">Enter the password to manage documents.</p>
+      <div class="field" style="margin-bottom:1rem;">
+        <input type="password" id="adminPass" placeholder="Password" onkeydown="if(event.key==='Enter')checkAdminPass()" style="text-align:center;font-size:16px;letter-spacing:.15em;">
+      </div>
+      <p id="passError" style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:1rem;display:none;">Incorrect password</p>
+      <button class="btn btn-primary" onclick="checkAdminPass()" style="width:100%;justify-content:center;">Unlock</button>
+    </div>
+  </div>
+
+  <!-- Admin Content -->
+  <div id="adminContent" style="display:none;">
+    <div class="section-head">
+      <h2>Document Administration</h2>
+      <div class="shr"><span class="badge" id="adminDocCount">0 documents</span></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('upload',this)">Upload Document</button>
+      <button class="admin-tab" onclick="switchAdminTab('manage',this)">Manage Documents</button>
+      <button class="admin-tab" onclick="switchAdminTab('categories',this)">Categories</button>
+    </div>
+
+    <!-- Upload Tab -->
+    <div id="tab-upload" class="tab-panel active">
+      <div class="form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="docName">Document Name</label>
+            <input type="text" id="docName" placeholder="e.g., Sanding SOP v2">
+          </div>
+          <div class="field">
+            <label for="docCategory">Category</label>
+            <select id="docCategory">
+              <option value="">Select a category…</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="docDesc">Description</label>
+            <textarea id="docDesc" placeholder="Brief description of the document…" style="min-height:60px;"></textarea>
+          </div>
+          <div class="field full">
+            <label>File</label>
+            <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+              <input type="file" id="fileInput" onchange="handleFileSelect(this)">
+              <strong>Click to choose a file or drag it here</strong>
+              <p>PDF, Word, Excel, images — up to 50MB</p>
+              <div class="file-name" id="fileName"></div>
+            </div>
+            <div class="upload-progress" id="uploadProgress">
+              <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+              <div class="progress-label" id="progressLabel">Uploading…</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="resetUploadForm()">Clear</button>
+          <button class="btn btn-primary" onclick="uploadDocument()" id="uploadBtn">▸ Upload Document</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage Tab -->
+    <div id="tab-manage" class="tab-panel">
+      <div class="table-wrap">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th style="width:80px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody">
+              <tr><td colspan="5" class="empty-state"><p>Loading…</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Tab -->
+    <div id="tab-categories" class="tab-panel">
+      <div class="settings-panel">
+        <div class="panel-head">
+          <span class="panel-head-label">Document Categories</span>
+          <span class="badge" id="catCount">0</span>
+        </div>
+        <div id="categoriesList"></div>
+        <div class="add-row">
+          <input type="text" id="newCategory" placeholder="New category…" onkeydown="if(event.key==='Enter')addCategory()">
+          <button class="btn btn-primary btn-sm" onclick="addCategory()">+ Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuCjLGosADUZJzB2y-GLVYLB6UazvNiNe6AdiSsQm-vdwxCnhPIWmtIPpXMf7Z7d_lhQ/exec';
+const ADMIN_PASS = '1055';
+
+let allDocs = [];
+let allCategories = [];
+let adminUnlocked = false;
+let selectedFile = null;
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+
+async function init() {
+  try {
+    setSync('syncing','Loading…');
+    await Promise.all([loadDocuments(), loadCategories()]);
+    setSync('ok','Synced');
+    hideLoading();
+  } catch(e) {
+    setSync('err','Error');
+    hideLoading();
+    toast('Failed to load data','err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// VIEW / TAB SWITCHING
+// ══════════════════════════════════════════════════════════════════════════
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('nav .tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  const tabs = document.querySelectorAll('nav .tab');
+  if(id==='library') { tabs[0].classList.add('active'); renderLibrary(); }
+  if(id==='admin') {
+    tabs[1].classList.add('active');
+    if(!adminUnlocked) document.getElementById('adminPass').focus();
+  }
+}
+
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='manage') renderAdminTable();
+  if(tab==='categories') renderCategories();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PASSWORD GATE
+// ══════════════════════════════════════════════════════════════════════════
+
+function checkAdminPass() {
+  const input = document.getElementById('adminPass');
+  if(input.value === ADMIN_PASS) {
+    adminUnlocked = true;
+    document.getElementById('adminGate').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    toast('Admin unlocked','ok');
+  } else {
+    document.getElementById('passError').style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════════════════════════════
+
+async function apiFetch(action, params={}) {
+  const body = new URLSearchParams({action, ...params});
+  const resp = await fetch(SCRIPT_URL, {method:'POST', body});
+  return resp.json();
+}
+
+async function loadDocuments() {
+  allDocs = await apiFetch('getDocuments');
+  document.getElementById('docCount').textContent = allDocs.length + ' documents';
+  document.getElementById('adminDocCount').textContent = allDocs.length + ' documents';
+  renderLibrary();
+}
+
+async function loadCategories() {
+  allCategories = await apiFetch('getCategories');
+  populateCategorySelects();
+}
+
+function populateCategorySelects() {
+  // Filter dropdown
+  const filter = document.getElementById('filterCat');
+  const val = filter.value;
+  filter.innerHTML = '<option value="">All Categories</option>';
+  allCategories.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; filter.appendChild(o); });
+  filter.value = val;
+  // Upload form dropdown
+  const upload = document.getElementById('docCategory');
+  upload.innerHTML = '<option value="">Select a category…</option>';
+  allCategories.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; upload.appendChild(o); });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LIBRARY VIEW — Public
+// ══════════════════════════════════════════════════════════════════════════
+
+function getFileIcon(filename) {
+  const ext = (filename||'').split('.').pop().toLowerCase();
+  if(['pdf'].includes(ext)) return {emoji:'📄', cls:'pdf'};
+  if(['xls','xlsx','csv'].includes(ext)) return {emoji:'📊', cls:'xls'};
+  if(['png','jpg','jpeg','gif','bmp','webp'].includes(ext)) return {emoji:'🖼️', cls:'img'};
+  if(['doc','docx'].includes(ext)) return {emoji:'📝', cls:''};
+  if(['ppt','pptx'].includes(ext)) return {emoji:'📰', cls:''};
+  return {emoji:'📎', cls:''};
+}
+
+function renderLibrary() {
+  const container = document.getElementById('libraryContent');
+  const search = (document.getElementById('searchDocs').value||'').toLowerCase();
+  const catFilter = document.getElementById('filterCat').value;
+
+  let filtered = allDocs.filter(d => {
+    const text = [d.name, d.description, d.category, d.filename].join(' ').toLowerCase();
+    if(search && !text.includes(search)) return false;
+    if(catFilter && d.category !== catFilter) return false;
+    return true;
+  });
+
+  document.getElementById('shownCount').textContent = filtered.length + ' shown';
+
+  if(filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div style="font-size:36px;margin-bottom:8px;">📂</div><p>No documents found.</p></div>';
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  filtered.forEach(d => {
+    const cat = d.category || 'Uncategorized';
+    if(!groups[cat]) groups[cat] = [];
+    groups[cat].push(d);
+  });
+
+  // Sort categories alphabetically, but put Uncategorized last
+  const sortedCats = Object.keys(groups).sort((a,b) => {
+    if(a==='Uncategorized') return 1;
+    if(b==='Uncategorized') return -1;
+    return a.localeCompare(b);
+  });
+
+  let html = '';
+  sortedCats.forEach(cat => {
+    const docs = groups[cat];
+    html += `<div class="category-group">`;
+    html += `<div class="category-label">${escHtml(cat)} (${docs.length})</div>`;
+    html += `<div class="doc-list">`;
+    docs.forEach(d => {
+      const icon = getFileIcon(d.filename);
+      html += `
+        <a href="${escAttr(d.url)}" target="_blank" class="doc-card" title="Download ${escAttr(d.name)}">
+          <div class="doc-icon ${icon.cls}">${icon.emoji}</div>
+          <div class="doc-info">
+            <div class="doc-name">${escHtml(d.name)}</div>
+            <div class="doc-desc">${escHtml(d.description)}</div>
+          </div>
+          <div class="doc-meta">
+            <span class="doc-date">${escHtml(d.date)}</span>
+          </div>
+          <span class="doc-arrow">↓</span>
+        </a>`;
+    });
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — UPLOAD
+// ══════════════════════════════════════════════════════════════════════════
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if(!file) return;
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name + ' (' + formatSize(file.size) + ')';
+  // Auto-fill doc name if empty
+  if(!document.getElementById('docName').value) {
+    document.getElementById('docName').value = file.name.replace(/\.[^.]+$/, '');
+  }
+}
+
+// Drag and drop
+const fileDrop = document.getElementById('fileDrop');
+fileDrop.addEventListener('dragover', e => { e.preventDefault(); fileDrop.classList.add('dragover'); });
+fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
+fileDrop.addEventListener('drop', e => {
+  e.preventDefault();
+  fileDrop.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file) {
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name + ' (' + formatSize(file.size) + ')';
+    if(!document.getElementById('docName').value) {
+      document.getElementById('docName').value = file.name.replace(/\.[^.]+$/, '');
+    }
+  }
+});
+
+async function uploadDocument() {
+  const name = document.getElementById('docName').value.trim();
+  const category = document.getElementById('docCategory').value;
+  const description = document.getElementById('docDesc').value.trim();
+
+  if(!name || !category || !selectedFile) {
+    toast('Please fill in name, category, and select a file','err');
+    return;
+  }
+
+  if(selectedFile.size > 50 * 1024 * 1024) {
+    toast('File too large — 50MB max','err');
+    return;
+  }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+  setSync('syncing','Uploading…');
+
+  const progress = document.getElementById('uploadProgress');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  progress.classList.add('active');
+  progressFill.style.width = '20%';
+  progressLabel.textContent = 'Reading file…';
+
+  try {
+    // Read file as base64
+    const base64 = await fileToBase64(selectedFile);
+    progressFill.style.width = '50%';
+    progressLabel.textContent = 'Uploading to Drive…';
+
+    const result = await apiFetch('uploadDocument', {
+      name,
+      category,
+      description,
+      filename: selectedFile.name,
+      mimeType: selectedFile.type || 'application/octet-stream',
+      fileData: base64
+    });
+
+    progressFill.style.width = '100%';
+
+    if(result.success) {
+      toast('Document uploaded','ok');
+      resetUploadForm();
+      await loadDocuments();
+      setSync('ok','Synced');
+    } else {
+      toast('Upload failed: ' + (result.error||'Unknown error'),'err');
+      setSync('err','Error');
+    }
+  } catch(e) {
+    toast('Upload error — try again','err');
+    setSync('err','Error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▸ Upload Document';
+  progress.classList.remove('active');
+  progressFill.style.width = '0%';
+}
+
+function resetUploadForm() {
+  document.getElementById('docName').value = '';
+  document.getElementById('docCategory').value = '';
+  document.getElementById('docDesc').value = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileName').textContent = '';
+  selectedFile = null;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatSize(bytes) {
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — MANAGE
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderAdminTable() {
+  const tbody = document.getElementById('adminTableBody');
+  if(allDocs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><p>No documents uploaded yet.</p></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = [...allDocs].reverse().map(d => `
+    <tr>
+      <td style="font-weight:500;color:var(--ink);">${escHtml(d.name)}</td>
+      <td><span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--paper-3);color:var(--ink-2);">${escHtml(d.category)}</span></td>
+      <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escAttr(d.description)}">${escHtml(d.description)}</td>
+      <td style="font-family:var(--mono);font-size:11px;white-space:nowrap;">${escHtml(d.date)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteDocument('${escAttr(d.id)}')">Delete</button></td>
+    </tr>
+  `).join('');
+}
+
+async function deleteDocument(id) {
+  if(!confirm('Delete this document? The file will also be removed from Drive.')) return;
+  setSync('syncing','Deleting…');
+  try {
+    const result = await apiFetch('deleteDocument', {id});
+    if(result.success) {
+      await loadDocuments();
+      renderAdminTable();
+      toast('Document deleted','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) {
+    toast('Error deleting document','err');
+    setSync('err','Error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — CATEGORIES
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderCategories() {
+  const list = document.getElementById('categoriesList');
+  document.getElementById('catCount').textContent = allCategories.length;
+  if(allCategories.length === 0) {
+    list.innerHTML = '<div style="padding:2rem;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-3);">No categories yet.</div>';
+    return;
+  }
+  list.innerHTML = allCategories.map(cat => `
+    <div class="setting-row">
+      <span class="setting-row-name">${escHtml(cat)}</span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="renameCategory('${escAttr(cat)}')">Rename</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${escAttr(cat)}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addCategory() {
+  const input = document.getElementById('newCategory');
+  const name = input.value.trim();
+  if(!name) return;
+  setSync('syncing','Saving…');
+  try {
+    const result = await apiFetch('addCategory', {name});
+    if(result.success) {
+      input.value = '';
+      allCategories.push(name);
+      renderCategories();
+      populateCategorySelects();
+      toast('Category added','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error adding category','err'); setSync('err','Error'); }
+}
+
+async function renameCategory(oldName) {
+  const newName = prompt('Rename category:', oldName);
+  if(!newName || newName.trim() === oldName) return;
+  setSync('syncing','Saving…');
+  try {
+    const result = await apiFetch('updateCategory', {oldName, newName: newName.trim()});
+    if(result.success) {
+      const idx = allCategories.indexOf(oldName);
+      if(idx>-1) allCategories[idx] = newName.trim();
+      renderCategories();
+      populateCategorySelects();
+      toast('Category renamed','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error renaming category','err'); setSync('err','Error'); }
+}
+
+async function deleteCategory(name) {
+  if(!confirm('Delete category "'+name+'"?')) return;
+  setSync('syncing','Deleting…');
+  try {
+    const result = await apiFetch('deleteCategory', {name});
+    if(result.success) {
+      allCategories = allCategories.filter(c=>c!==name);
+      renderCategories();
+      populateCategorySelects();
+      toast('Category deleted','ok');
+      setSync('ok','Synced');
+    }
+  } catch(e) { toast('Error deleting category','err'); setSync('err','Error'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════════════════
+
+function setSync(state, label) {
+  const el = document.getElementById('sync-status');
+  el.className = state;
+  document.getElementById('sync-label').textContent = label;
+}
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type==='err'?'terr show':type==='ok'?'tok show':'show';
+  setTimeout(()=>{ el.className = ''; }, 3000);
+}
+
+function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function escAttr(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
