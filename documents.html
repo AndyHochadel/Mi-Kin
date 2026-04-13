@@ -114,6 +114,7 @@ thead th{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.
 tbody tr{border-bottom:1px solid var(--paper-2);transition:background .1s;}
 tbody tr:hover{background:var(--accent-2);}
 tbody td{padding:10px 12px;color:var(--ink-2);vertical-align:middle;}
+tr.cat-group-row td{background:var(--paper-2);font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:6px 12px;border-bottom:1px solid var(--border);}
 
 /* ══ SETTINGS PANELS ══ */
 .settings-panel{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;max-width:500px;}
@@ -294,7 +295,7 @@ tbody td{padding:10px 12px;color:var(--ink-2);vertical-align:middle;}
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Category</th>
+                <th>File</th>
                 <th>Description</th>
                 <th>Date</th>
                 <th style="width:80px;">Action</th>
@@ -329,7 +330,7 @@ tbody td{padding:10px 12px;color:var(--ink-2);vertical-align:middle;}
 <!-- JAVASCRIPT                                                           -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuCjLGosADUZJzB2y-GLVYLB6UazvNiNe6AdiSsQm-vdwxCnhPIWmtIPpXMf7Z7d_lhQ/exec';
+const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 const ADMIN_PASS = '1055';
 
 let allDocs = [];
@@ -638,15 +639,34 @@ function renderAdminTable() {
     return;
   }
 
-  tbody.innerHTML = [...allDocs].reverse().map(d => `
-    <tr>
-      <td style="font-weight:500;color:var(--ink);">${escHtml(d.name)}</td>
-      <td><span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--paper-3);color:var(--ink-2);">${escHtml(d.category)}</span></td>
-      <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escAttr(d.description)}">${escHtml(d.description)}</td>
-      <td style="font-family:var(--mono);font-size:11px;white-space:nowrap;">${escHtml(d.date)}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteDocument('${escAttr(d.id)}')">Delete</button></td>
-    </tr>
-  `).join('');
+  // Sort by category name, then by name within category
+  const sorted = [...allDocs].sort((a,b) => {
+    const catCmp = (a.category||'').localeCompare(b.category||'');
+    if(catCmp !== 0) return catCmp;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+
+  let lastCat = null;
+  const rows = [];
+
+  sorted.forEach(d => {
+    const thisCat = d.category || 'Uncategorized';
+    if(thisCat !== lastCat) {
+      rows.push(`<tr class="cat-group-row"><td colspan="5">${escHtml(thisCat)}</td></tr>`);
+      lastCat = thisCat;
+    }
+    rows.push(`
+      <tr>
+        <td style="font-weight:500;color:var(--ink);">${escHtml(d.name)}</td>
+        <td style="font-family:var(--mono);font-size:11px;">${escHtml(d.filename)}</td>
+        <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escAttr(d.description)}">${escHtml(d.description)}</td>
+        <td style="font-family:var(--mono);font-size:11px;white-space:nowrap;">${escHtml(d.date)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteDocument('${escAttr(d.id)}')">Delete</button></td>
+      </tr>
+    `);
+  });
+
+  tbody.innerHTML = rows.join('');
 }
 
 async function deleteDocument(id) {
