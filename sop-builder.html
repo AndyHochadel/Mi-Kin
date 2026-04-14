@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOP Builder — Mi-Kin Creations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --ink:#1a1a18; --ink-2:#4a4a44; --ink-3:#8a8a80;
+  --paper:#f5f3ee; --paper-2:#eceae3; --paper-3:#e0ddd4;
+  --accent:#c8410a; --accent-2:#f0e8d8; --border:#ccc9be;
+  --green:#2d7a4f; --green-bg:#e8f5ee;
+  --mono:'JetBrains Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;}
+
+header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:2px solid var(--accent);position:sticky;top:0;z-index:100;}
+.logo-left{display:flex;align-items:center;gap:14px;}
+.logo-company{font-family:var(--sans);font-weight:700;font-size:15px;color:#fff;letter-spacing:.02em;}
+.logo-company span{color:var(--accent);}
+.logo-divider{width:1px;height:22px;background:rgba(255,255,255,.15);}
+.logo-app{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.header-tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+
+main{max-width:860px;margin:2.5rem auto;padding:0 1.5rem 4rem;}
+
+.form-title-block{margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:2px solid var(--border);}
+.form-title-block h1{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:.02em;color:var(--ink);margin-bottom:.3rem;}
+.form-title-block p{font-size:13px;color:var(--ink-3);}
+
+.section{margin-bottom:1.75rem;}
+.section-label{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.section-hint{font-family:var(--sans);font-size:11px;font-weight:400;color:var(--ink-3);text-transform:none;letter-spacing:0;font-style:italic;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+
+.field{display:flex;flex-direction:column;gap:.35rem;}
+.field label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);}
+.field input[type=text],.field input[type=date],.field select,.field textarea{
+  font-family:var(--sans);font-size:13.5px;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:4px;padding:.5rem .65rem;transition:border-color .15s;outline:none;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:70px;line-height:1.55;}
+
+.check-group{display:flex;flex-wrap:wrap;gap:.5rem .75rem;margin-top:.15rem;}
+.check-item{display:flex;align-items:center;gap:.4rem;font-size:13px;color:var(--ink-2);cursor:pointer;}
+.check-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
+
+/* ══ STEPS ══ */
+.steps-list{display:flex;flex-direction:column;gap:10px;}
+.step-card{background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:1rem;position:relative;transition:border-color .15s;}
+.step-card:focus-within{border-color:var(--accent);}
+.step-header{display:flex;align-items:center;gap:10px;margin-bottom:.65rem;}
+.step-num{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-2);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-card input[type=text]{font-family:var(--sans);font-size:13.5px;color:var(--ink);background:transparent;border:none;border-bottom:1.5px solid var(--border);border-radius:0;padding:.3rem 0;outline:none;flex:1;transition:border-color .15s;}
+.step-card input[type=text]:focus{border-color:var(--accent);}
+.step-card textarea{font-family:var(--sans);font-size:12.5px;color:var(--ink-2);background:var(--paper);border:1px solid var(--border);border-radius:3px;padding:.4rem .6rem;outline:none;width:100%;min-height:44px;resize:vertical;line-height:1.5;transition:border-color .15s;}
+.step-card textarea:focus{border-color:var(--accent);}
+.step-card textarea::placeholder{color:var(--ink-3);}
+.step-note-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;margin-top:6px;}
+.step-remove{position:absolute;top:8px;right:10px;background:none;border:none;font-size:16px;color:var(--ink-3);cursor:pointer;padding:2px 6px;border-radius:3px;transition:all .15s;}
+.step-remove:hover{color:#c0392b;background:#fdf0ef;}
+
+.btn{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.55rem 1.2rem;border-radius:4px;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#a33408;}
+.btn-secondary{background:var(--paper-3);color:var(--ink-2);}
+.btn-secondary:hover{background:var(--paper-2);}
+.btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--ink-2);}
+.btn-sm{padding:.4rem .8rem;font-size:10px;}
+
+.btn-row{display:flex;justify-content:flex-end;gap:.75rem;margin-top:2.5rem;padding-top:1.25rem;border-top:1.5px solid var(--border);}
+
+.add-step-row{margin-top:.75rem;}
+
+/* ══ REVISION TABLE ══ */
+.rev-table{width:100%;border-collapse:collapse;font-size:13px;}
+.rev-table th{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);background:var(--paper-2);}
+.rev-table td{padding:4px 8px;border-bottom:1px solid var(--paper-2);}
+.rev-table input{font-family:var(--sans);font-size:12px;color:var(--ink);border:none;background:transparent;outline:none;width:100%;padding:2px 0;}
+.rev-table input:focus{border-bottom:1px solid var(--accent);}
+.rev-remove{background:none;border:none;color:var(--ink-3);cursor:pointer;font-size:14px;padding:2px;}
+.rev-remove:hover{color:#c0392b;}
+
+.notice{background:var(--accent-2);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:.65rem .85rem;font-size:12px;color:var(--ink-2);line-height:1.55;margin-top:.75rem;}
+
+@media(max-width:640px){
+  header{padding:0 1rem;height:auto;min-height:56px;flex-wrap:wrap;padding:10px 1rem;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  main{padding:0 1rem 3rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-left">
+    <a href="index.html" style="text-decoration:none;color:rgba(255,255,255,.4);font-size:14px;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.4)'" title="Back to Dashboard">←</a>
+    <div class="logo-company">Mi-<span>Kin</span> Creations</div>
+    <div class="logo-divider"></div>
+    <div class="logo-app">SOP Builder</div>
+  </div>
+  <span class="header-tag">Standard Operating Procedure</span>
+</header>
+
+<main>
+  <div class="form-title-block">
+    <h1>SOP Builder</h1>
+    <p>Fill in the sections that apply. Empty sections are automatically excluded from the exported PDF.</p>
+  </div>
+
+  <!-- ══ HEADER INFO ══ -->
+  <div class="section">
+    <div class="section-label">Document Info</div>
+    <div class="grid-3" style="margin-bottom:1rem;">
+      <div class="field"><label>SOP Number</label><input type="text" id="sopNum" placeholder="e.g., SOP-001"></div>
+      <div class="field"><label>Revision</label><input type="text" id="sopRev" placeholder="e.g., Rev A" value="Rev A"></div>
+      <div class="field"><label>Effective Date</label><input type="date" id="sopDate"></div>
+    </div>
+    <div class="field" style="margin-bottom:1rem;">
+      <label>SOP Title</label>
+      <input type="text" id="sopTitle" placeholder="e.g., Edge Banding Application Procedure" style="font-size:16px;font-weight:600;">
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Department</label><input type="text" id="sopDept" placeholder="e.g., Panel Processing"></div>
+      <div class="field"><label>Author</label><input type="text" id="sopAuthor" placeholder="e.g., Andy Hochadel"></div>
+    </div>
+  </div>
+
+  <!-- ══ PURPOSE ══ -->
+  <div class="section">
+    <div class="section-label">Purpose <span class="section-hint">Why does this procedure exist?</span></div>
+    <div class="field">
+      <textarea id="sopPurpose" placeholder="e.g., To ensure consistent and defect-free edge banding application across all panel products."></textarea>
+    </div>
+  </div>
+
+  <!-- ══ SCOPE ══ -->
+  <div class="section">
+    <div class="section-label">Scope <span class="section-hint">Who and what does this apply to?</span></div>
+    <div class="field">
+      <textarea id="sopScope" placeholder="e.g., Applies to all Panel Processing operators running the edge bander."></textarea>
+    </div>
+  </div>
+
+  <!-- ══ SAFETY / PPE ══ -->
+  <div class="section">
+    <div class="section-label">Safety / PPE <span class="section-hint">Leave blank if not applicable</span></div>
+    <div class="field" style="margin-bottom:.75rem;">
+      <label>Required PPE</label>
+      <div class="check-group" id="ppeChecks">
+        <label class="check-item"><input type="checkbox" value="Safety glasses"> Safety glasses</label>
+        <label class="check-item"><input type="checkbox" value="Hearing protection"> Hearing protection</label>
+        <label class="check-item"><input type="checkbox" value="Dust mask / respirator"> Dust mask / respirator</label>
+        <label class="check-item"><input type="checkbox" value="Gloves"> Gloves</label>
+        <label class="check-item"><input type="checkbox" value="Steel-toe boots"> Steel-toe boots</label>
+        <label class="check-item"><input type="checkbox" value="Face shield"> Face shield</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Additional Safety Notes</label>
+      <textarea id="sopSafety" placeholder="e.g., Keep hands clear of feed rollers at all times. Ensure dust collection is running before operation."></textarea>
+    </div>
+  </div>
+
+  <!-- ══ TOOLS / MATERIALS ══ -->
+  <div class="section">
+    <div class="section-label">Tools / Materials Needed <span class="section-hint">Leave blank if not applicable</span></div>
+    <div class="field">
+      <textarea id="sopTools" placeholder="List tools, materials, or supplies needed. One per line.&#10;&#10;e.g.,&#10;Edge bander (Holz-Her)&#10;Edge banding roll (matching color)&#10;Flush trim router&#10;Cleaning solvent"></textarea>
+    </div>
+  </div>
+
+  <!-- ══ PROCEDURE ══ -->
+  <div class="section">
+    <div class="section-label">Procedure</div>
+    <div class="steps-list" id="stepsList"></div>
+    <div class="add-step-row">
+      <button class="btn btn-ghost btn-sm" onclick="addStep()">+ Add Step</button>
+    </div>
+  </div>
+
+  <!-- ══ QUALITY CHECK ══ -->
+  <div class="section">
+    <div class="section-label">Quality Check <span class="section-hint">Leave blank if not applicable</span></div>
+    <div class="field">
+      <textarea id="sopQuality" placeholder="What should be verified when this procedure is complete?&#10;&#10;e.g.,&#10;Edge banding flush with panel face — no overhang&#10;No bubbling, lifting, or gaps&#10;Color match verified against sample"></textarea>
+    </div>
+  </div>
+
+  <!-- ══ REVISION HISTORY ══ -->
+  <div class="section">
+    <div class="section-label">Revision History <span class="section-hint">Optional — track changes over time</span></div>
+    <table class="rev-table">
+      <thead><tr><th>Rev</th><th>Date</th><th>Description</th><th>By</th><th></th></tr></thead>
+      <tbody id="revBody"></tbody>
+    </table>
+    <div style="margin-top:.5rem;">
+      <button class="btn btn-ghost btn-sm" onclick="addRevision()">+ Add Revision</button>
+    </div>
+  </div>
+
+  <!-- ══ APPROVAL ══ -->
+  <div class="section">
+    <div class="section-label">Approval</div>
+    <div class="grid-2">
+      <div class="field"><label>Prepared By</label><input type="text" id="sopPrepared" placeholder="Name and title"></div>
+      <div class="field"><label>Approved By</label><input type="text" id="sopApproved" placeholder="Name and title"></div>
+    </div>
+  </div>
+
+  <div class="notice">
+    Empty sections are automatically excluded from the exported PDF. Only fill in what's relevant to this procedure.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="if(confirm('Clear all fields?'))window.location.reload()">Clear Form</button>
+    <button class="btn btn-primary" onclick="exportPDF()">Export PDF</button>
+  </div>
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// STEPS
+// ══════════════════════════════════════════════════════════════════════════
+let stepCount = 0;
+
+function addStep() {
+  stepCount++;
+  const div = document.createElement('div');
+  div.className = 'step-card';
+  div.id = 'step-' + stepCount;
+  div.innerHTML = `
+    <button class="step-remove" onclick="removeStep(${stepCount})" title="Remove step">×</button>
+    <div class="step-header">
+      <div class="step-num">${document.querySelectorAll('.step-card').length + 1}</div>
+      <input type="text" class="step-title" placeholder="Step description — what to do">
+    </div>
+    <div class="step-note-label">Note / Tip (optional)</div>
+    <textarea class="step-note" placeholder="Any helpful details, warnings, or tips for this step..."></textarea>
+  `;
+  document.getElementById('stepsList').appendChild(div);
+}
+
+function removeStep(id) {
+  const el = document.getElementById('step-' + id);
+  if(el) el.remove();
+  renumberSteps();
+}
+
+function renumberSteps() {
+  document.querySelectorAll('.step-card').forEach((card, i) => {
+    card.querySelector('.step-num').textContent = i + 1;
+  });
+}
+
+function getSteps() {
+  const steps = [];
+  document.querySelectorAll('.step-card').forEach((card, i) => {
+    const title = card.querySelector('.step-title').value.trim();
+    const note = card.querySelector('.step-note').value.trim();
+    if(title) steps.push({num: i+1, title, note});
+  });
+  return steps;
+}
+
+// Start with 3 empty steps
+addStep(); addStep(); addStep();
+
+// ══════════════════════════════════════════════════════════════════════════
+// REVISIONS
+// ══════════════════════════════════════════════════════════════════════════
+let revCount = 0;
+
+function addRevision() {
+  revCount++;
+  const tr = document.createElement('tr');
+  tr.id = 'rev-' + revCount;
+  tr.innerHTML = `
+    <td style="width:60px;"><input type="text" class="rev-num" placeholder="A"></td>
+    <td style="width:100px;"><input type="text" class="rev-date" placeholder="MM/DD/YY"></td>
+    <td><input type="text" class="rev-desc" placeholder="Description of change"></td>
+    <td style="width:80px;"><input type="text" class="rev-by" placeholder="Initials"></td>
+    <td style="width:30px;"><button class="rev-remove" onclick="this.closest('tr').remove()">×</button></td>
+  `;
+  document.getElementById('revBody').appendChild(tr);
+}
+
+function getRevisions() {
+  const revs = [];
+  document.querySelectorAll('#revBody tr').forEach(tr => {
+    const num = tr.querySelector('.rev-num').value.trim();
+    const date = tr.querySelector('.rev-date').value.trim();
+    const desc = tr.querySelector('.rev-desc').value.trim();
+    const by = tr.querySelector('.rev-by').value.trim();
+    if(num || desc) revs.push({num, date, desc, by});
+  });
+  return revs;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════
+function v(id) { return (document.getElementById(id)||{}).value?.trim() || ''; }
+function getPPE() { return [...document.querySelectorAll('#ppeChecks input:checked')].map(c=>c.value); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// PDF EXPORT
+// ══════════════════════════════════════════════════════════════════════════
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'letter' });
+  const W = 215.9, H = 279.4;
+  const ML = 18, MR = 18, MT = 18;
+  const CW = W - ML - MR;
+  let y = MT;
+  let sectionNum = 0;
+
+  const INK = [26,26,24];
+  const INK2 = [74,74,68];
+  const INK3 = [138,138,128];
+  const ACCENT = [200,65,10];
+  const BORDER = [204,201,190];
+  const LIGHT = [245,243,238];
+
+  function checkPage(need) {
+    if (y + need > H - 18) { doc.addPage(); y = MT; }
+  }
+
+  function sectionHead(title) {
+    sectionNum++;
+    checkPage(14);
+    if(sectionNum > 1) y += 3;
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...ACCENT);
+    doc.text(sectionNum + '.  ' + title.toUpperCase(), ML, y);
+    y += 1.5;
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.3);
+    doc.line(ML, y, W - MR, y);
+    y += 5;
+  }
+
+  function bodyText(text, opts = {}) {
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(opts.size || 9.5);
+    doc.setTextColor(...(opts.color || INK2));
+    const maxW = opts.width || CW;
+    const lines = doc.splitTextToSize(text, maxW);
+    const lineH = opts.lineH || 4;
+    checkPage(lines.length * lineH + 2);
+    doc.text(lines, opts.x || ML, y);
+    y += lines.length * lineH;
+    return lines.length;
+  }
+
+  function spacer(h) { y += h || 3; }
+
+  // ══ HEADER BAR ══
+  doc.setFillColor(...INK);
+  doc.rect(0, 0, W, 14, 'F');
+  doc.setDrawColor(...ACCENT);
+  doc.setLineWidth(0.8);
+  doc.line(0, 14, W, 14);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255,255,255);
+  doc.text('Mi-Kin Creations', ML, 9);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(180,180,180);
+  doc.text('STANDARD OPERATING PROCEDURE', W - MR, 9, {align:'right'});
+  y = 22;
+
+  // ══ TITLE BLOCK ══
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...INK);
+  const titleLines = doc.splitTextToSize(v('sopTitle') || 'Untitled SOP', CW);
+  doc.text(titleLines, ML, y);
+  y += titleLines.length * 7 + 2;
+
+  // Meta row
+  doc.setFillColor(...LIGHT);
+  doc.roundedRect(ML, y - 1, CW, 9, 1.5, 1.5, 'F');
+  const metaItems = [
+    {label:'SOP #', val: v('sopNum')},
+    {label:'Rev', val: v('sopRev')},
+    {label:'Date', val: v('sopDate')},
+    {label:'Dept', val: v('sopDept')},
+    {label:'Author', val: v('sopAuthor')}
+  ].filter(m => m.val);
+  let mx = ML + 3;
+  metaItems.forEach(m => {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...INK3);
+    doc.text(m.label + ':', mx, y + 4.5);
+    const labelW = doc.getTextWidth(m.label + ': ');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...INK);
+    doc.text(m.val, mx + labelW, y + 4.5);
+    mx += labelW + doc.getTextWidth(m.val) + 8;
+  });
+  y += 14;
+
+  // ══ PURPOSE ══
+  if(v('sopPurpose')) {
+    sectionHead('Purpose');
+    bodyText(v('sopPurpose'));
+    spacer(2);
+  }
+
+  // ══ SCOPE ══
+  if(v('sopScope')) {
+    sectionHead('Scope');
+    bodyText(v('sopScope'));
+    spacer(2);
+  }
+
+  // ══ SAFETY / PPE ══
+  const ppe = getPPE();
+  const safetyNotes = v('sopSafety');
+  if(ppe.length > 0 || safetyNotes) {
+    sectionHead('Safety / PPE');
+    if(ppe.length > 0) {
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...INK);
+      doc.text('Required PPE:', ML, y);
+      y += 4.5;
+      ppe.forEach(item => {
+        checkPage(5);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...INK2);
+        doc.text('\u2022  ' + item, ML + 4, y);
+        y += 4.5;
+      });
+      spacer(2);
+    }
+    if(safetyNotes) {
+      bodyText(safetyNotes);
+    }
+    spacer(2);
+  }
+
+  // ══ TOOLS / MATERIALS ══
+  const tools = v('sopTools');
+  if(tools) {
+    sectionHead('Tools / Materials Needed');
+    const toolLines = tools.split('\n').map(l => l.trim()).filter(l => l);
+    toolLines.forEach(line => {
+      checkPage(5);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...INK2);
+      doc.text('\u2022  ' + line, ML + 4, y);
+      y += 4.5;
+    });
+    spacer(2);
+  }
+
+  // ══ PROCEDURE ══
+  const steps = getSteps();
+  if(steps.length > 0) {
+    sectionHead('Procedure');
+    steps.forEach(step => {
+      checkPage(step.note ? 18 : 10);
+      // Step number circle
+      doc.setFillColor(...ACCENT);
+      doc.circle(ML + 4, y - 1, 3.5, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255,255,255);
+      doc.text(String(step.num), ML + 4, y + 0.5, {align:'center'});
+      // Step text
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...INK);
+      const stepLines = doc.splitTextToSize(step.title, CW - 16);
+      doc.text(stepLines, ML + 12, y);
+      y += stepLines.length * 4.5;
+      // Note
+      if(step.note) {
+        y += 1;
+        doc.setFillColor(245,243,238);
+        const noteLines = doc.splitTextToSize(step.note, CW - 20);
+        const noteH = noteLines.length * 3.8 + 4;
+        checkPage(noteH + 2);
+        doc.roundedRect(ML + 12, y - 2, CW - 16, noteH, 1, 1, 'F');
+        doc.setFont('helvetica','italic');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...INK3);
+        doc.text(noteLines, ML + 14, y + 1.5);
+        y += noteH;
+      }
+      y += 4;
+    });
+    spacer(1);
+  }
+
+  // ══ QUALITY CHECK ══
+  const quality = v('sopQuality');
+  if(quality) {
+    sectionHead('Quality Check');
+    const qLines = quality.split('\n').map(l => l.trim()).filter(l => l);
+    if(qLines.length > 1) {
+      qLines.forEach(line => {
+        checkPage(5);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...INK2);
+        doc.text('\u2022  ' + line, ML + 4, y);
+        y += 4.5;
+      });
+    } else {
+      bodyText(quality);
+    }
+    spacer(2);
+  }
+
+  // ══ REVISION HISTORY ══
+  const revs = getRevisions();
+  if(revs.length > 0) {
+    sectionHead('Revision History');
+    // Table header
+    const cols = [{label:'REV', w:15}, {label:'DATE', w:25}, {label:'DESCRIPTION', w:115}, {label:'BY', w:20}];
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...INK3);
+    let cx = ML;
+    cols.forEach(c => { doc.text(c.label, cx, y); cx += c.w; });
+    y += 2;
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.3);
+    doc.line(ML, y, W - MR, y);
+    y += 4;
+    // Rows
+    revs.forEach(rev => {
+      checkPage(6);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...INK2);
+      cx = ML;
+      doc.text(rev.num || '', cx, y); cx += 15;
+      doc.text(rev.date || '', cx, y); cx += 25;
+      const descLines = doc.splitTextToSize(rev.desc || '', 115);
+      doc.text(descLines, cx, y); cx += 115;
+      doc.text(rev.by || '', cx, y);
+      y += descLines.length * 4 + 2;
+    });
+    spacer(2);
+  }
+
+  // ══ APPROVAL ══
+  const prepared = v('sopPrepared');
+  const approved = v('sopApproved');
+  if(prepared || approved) {
+    checkPage(30);
+    sectionHead('Approval');
+    const sigW = (CW - 12) / 2;
+    if(prepared) {
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.4);
+      doc.line(ML, y + 8, ML + sigW, y + 8);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...INK3);
+      doc.text('Prepared By', ML, y + 12);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...INK2);
+      doc.text(prepared, ML, y + 16);
+    }
+    if(approved) {
+      const x2 = ML + sigW + 12;
+      doc.setDrawColor(...BORDER);
+      doc.line(x2, y + 8, x2 + sigW, y + 8);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...INK3);
+      doc.text('Approved By', x2, y + 12);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...INK2);
+      doc.text(approved, x2, y + 16);
+    }
+    y += 20;
+  }
+
+  // ══ FOOTER on all pages ══
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...INK3);
+    const title = v('sopTitle') || 'Untitled SOP';
+    const num = v('sopNum') || '';
+    doc.text('Mi-Kin Creations' + (num ? ' — ' + num : '') + ' — ' + title, ML, H - 10);
+    doc.text('Page ' + i + ' of ' + totalPages, W - MR, H - 10, {align:'right'});
+  }
+
+  // ══ SAVE ══
+  const filename = (v('sopNum') || 'SOP') + '_' + (v('sopTitle') || 'Untitled').replace(/[^a-zA-Z0-9]/g,'_').substring(0,40);
+  doc.save(filename + '.pdf');
+}
+</script>
+</body>
+</html>
