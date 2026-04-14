@@ -95,6 +95,7 @@ nav{display:flex;gap:4px;}
 .doc-icon.pdf{background:#fdecea;color:#c0392b;}
 .doc-icon.xls{background:#e8f5ee;color:var(--green);}
 .doc-icon.img{background:#e8f0fa;color:#2d5a9f;}
+.doc-icon.link{background:#f0e8f5;color:#6b3fa0;}
 .doc-info{flex:1;min-width:0;}
 .doc-name{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .doc-desc{font-size:12px;color:var(--ink-3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
@@ -249,7 +250,13 @@ tr.cat-group-row td{background:var(--paper-2);font-family:var(--mono);font-size:
 
     <!-- Upload Tab -->
     <div id="tab-upload" class="tab-panel active">
-      <div class="form-card">
+      <div style="display:flex;gap:0;margin-bottom:1.25rem;">
+        <button class="admin-tab active" onclick="switchUploadMode('file',this)" style="border-radius:3px 0 0 3px;">Upload File</button>
+        <button class="admin-tab" onclick="switchUploadMode('link',this)" style="border-radius:0 3px 3px 0;">Link URL</button>
+      </div>
+
+      <!-- File Upload Mode -->
+      <div id="mode-file" class="form-card">
         <div class="form-grid">
           <div class="field">
             <label for="docName">Document Name</label>
@@ -282,6 +289,34 @@ tr.cat-group-row td{background:var(--paper-2);font-family:var(--mono);font-size:
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="resetUploadForm()">Clear</button>
           <button class="btn btn-primary" onclick="uploadDocument()" id="uploadBtn">▸ Upload Document</button>
+        </div>
+      </div>
+
+      <!-- Link URL Mode -->
+      <div id="mode-link" class="form-card" style="display:none;">
+        <div class="form-grid">
+          <div class="field">
+            <label for="linkName">Document Name</label>
+            <input type="text" id="linkName" placeholder="e.g., Employee Mediation Record">
+          </div>
+          <div class="field">
+            <label for="linkCategory">Category</label>
+            <select id="linkCategory">
+              <option value="">Select a category…</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="linkDesc">Description</label>
+            <textarea id="linkDesc" placeholder="Brief description…" style="min-height:60px;"></textarea>
+          </div>
+          <div class="field full">
+            <label for="linkUrl">URL</label>
+            <input type="text" id="linkUrl" placeholder="https://...">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="resetLinkForm()">Clear</button>
+          <button class="btn btn-primary" onclick="addLink()" id="linkBtn">▸ Add Link</button>
         </div>
       </div>
     </div>
@@ -430,19 +465,25 @@ function populateCategorySelects() {
   const upload = document.getElementById('docCategory');
   upload.innerHTML = '<option value="">Select a category…</option>';
   allCategories.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; upload.appendChild(o); });
+  // Link form dropdown
+  const link = document.getElementById('linkCategory');
+  link.innerHTML = '<option value="">Select a category…</option>';
+  allCategories.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; link.appendChild(o); });
 }
 
 // ══════════════════════════════════════════════════════════════════════════
 // LIBRARY VIEW — Public
 // ══════════════════════════════════════════════════════════════════════════
 
-function getFileIcon(filename) {
+function getFileIcon(filename, type) {
+  if(type === 'link') return {emoji:'🔗', cls:'link'};
   const ext = (filename||'').split('.').pop().toLowerCase();
   if(['pdf'].includes(ext)) return {emoji:'📄', cls:'pdf'};
   if(['xls','xlsx','csv'].includes(ext)) return {emoji:'📊', cls:'xls'};
   if(['png','jpg','jpeg','gif','bmp','webp'].includes(ext)) return {emoji:'🖼️', cls:'img'};
   if(['doc','docx'].includes(ext)) return {emoji:'📝', cls:''};
   if(['ppt','pptx'].includes(ext)) return {emoji:'📰', cls:''};
+  if(['html','htm'].includes(ext)) return {emoji:'🌐', cls:'link'};
   return {emoji:'📎', cls:''};
 }
 
@@ -487,9 +528,12 @@ function renderLibrary() {
     html += `<div class="category-label">${escHtml(cat)} (${docs.length})</div>`;
     html += `<div class="doc-list">`;
     docs.forEach(d => {
-      const icon = getFileIcon(d.filename);
+      const isLink = d.type === 'link';
+      const icon = getFileIcon(d.filename, d.type);
+      const arrow = isLink ? '→' : '↓';
+      const title = isLink ? 'Open '+escAttr(d.name) : 'Download '+escAttr(d.name);
       html += `
-        <a href="${escAttr(d.url)}" target="_blank" class="doc-card" title="Download ${escAttr(d.name)}">
+        <a href="${escAttr(d.url)}" target="_blank" class="doc-card" title="${title}">
           <div class="doc-icon ${icon.cls}">${icon.emoji}</div>
           <div class="doc-info">
             <div class="doc-name">${escHtml(d.name)}</div>
@@ -498,7 +542,7 @@ function renderLibrary() {
           <div class="doc-meta">
             <span class="doc-date">${escHtml(d.date)}</span>
           </div>
-          <span class="doc-arrow">↓</span>
+          <span class="doc-arrow">${arrow}</span>
         </a>`;
     });
     html += `</div></div>`;
@@ -654,10 +698,13 @@ function renderAdminTable() {
       rows.push(`<tr class="cat-group-row"><td colspan="5">${escHtml(thisCat)}</td></tr>`);
       lastCat = thisCat;
     }
+    const typeLabel = d.type === 'link'
+      ? '<span style="font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;background:#f0e8f5;color:#6b3fa0;">LINK</span>'
+      : '<span style="font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;background:var(--paper-3);color:var(--ink-2);">FILE</span>';
     rows.push(`
       <tr>
         <td style="font-weight:500;color:var(--ink);">${escHtml(d.name)}</td>
-        <td style="font-family:var(--mono);font-size:11px;">${escHtml(d.filename)}</td>
+        <td>${typeLabel} ${escHtml(d.type==='link' ? '' : (d.filename||''))}</td>
         <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escAttr(d.description)}">${escHtml(d.description)}</td>
         <td style="font-family:var(--mono);font-size:11px;white-space:nowrap;">${escHtml(d.date)}</td>
         <td><button class="btn btn-danger btn-sm" onclick="deleteDocument('${escAttr(d.id)}')">Delete</button></td>
@@ -755,6 +802,64 @@ async function deleteCategory(name) {
       setSync('ok','Synced');
     }
   } catch(e) { toast('Error deleting category','err'); setSync('err','Error'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — UPLOAD MODE TOGGLE
+// ══════════════════════════════════════════════════════════════════════════
+
+function switchUploadMode(mode, btn) {
+  document.getElementById('mode-file').style.display = mode==='file' ? 'block' : 'none';
+  document.getElementById('mode-link').style.display = mode==='link' ? 'block' : 'none';
+  const tabs = btn.parentElement.querySelectorAll('.admin-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN — ADD LINK
+// ══════════════════════════════════════════════════════════════════════════
+
+async function addLink() {
+  const name = document.getElementById('linkName').value.trim();
+  const category = document.getElementById('linkCategory').value;
+  const description = document.getElementById('linkDesc').value.trim();
+  const url = document.getElementById('linkUrl').value.trim();
+
+  if(!name || !category || !url) {
+    toast('Please fill in name, category, and URL','err');
+    return;
+  }
+
+  const btn = document.getElementById('linkBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  setSync('syncing','Saving…');
+
+  try {
+    const result = await apiFetch('addLink', {name, category, description, url});
+    if(result.success) {
+      toast('Link added','ok');
+      resetLinkForm();
+      await loadDocuments();
+      setSync('ok','Synced');
+    } else {
+      toast('Failed: ' + (result.error||'Unknown error'),'err');
+      setSync('err','Error');
+    }
+  } catch(e) {
+    toast('Error adding link','err');
+    setSync('err','Error');
+  }
+  btn.disabled = false;
+  btn.textContent = '▸ Add Link';
+}
+
+function resetLinkForm() {
+  document.getElementById('linkName').value = '';
+  document.getElementById('linkCategory').value = '';
+  document.getElementById('linkDesc').value = '';
+  document.getElementById('linkUrl').value = '';
 }
 
 // ══════════════════════════════════════════════════════════════════════════
