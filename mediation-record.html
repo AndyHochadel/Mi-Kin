@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Mediation Record — Mi-Kin Creations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a18; --ink-2:#4a4a44; --ink-3:#8a8a80;
+  --paper:#f5f3ee; --paper-2:#eceae3; --paper-3:#e0ddd4;
+  --accent:#c8410a; --accent-2:#f0e8d8; --border:#ccc9be;
+  --mono:'JetBrains Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;}
+
+/* ══ HEADER ══ */
+header{background:var(--ink);color:var(--paper);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:2px solid var(--accent);}
+.logo-company{font-family:var(--sans);font-weight:700;font-size:15px;color:#fff;letter-spacing:.02em;}
+.logo-company span{color:var(--accent);}
+.header-tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+
+/* ══ PRINT HEADER (hidden on screen) ══ */
+.print-header{display:none;}
+
+/* ══ MAIN ══ */
+main{max-width:860px;margin:2.5rem auto;padding:0 1.5rem 4rem;}
+
+.form-title-block{margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:2px solid var(--border);}
+.form-title-block h1{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:.02em;color:var(--ink);margin-bottom:.3rem;}
+.form-title-block p{font-size:13px;color:var(--ink-3);}
+
+/* ══ SECTION ══ */
+.section{margin-bottom:1.75rem;}
+.section-label{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+
+/* ══ GRID ══ */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.span-2{grid-column:span 2;}
+
+/* ══ FIELD ══ */
+.field{display:flex;flex-direction:column;gap:.35rem;}
+.field label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);}
+.field input[type=text],
+.field input[type=date],
+.field input[type=time],
+.field select,
+.field textarea{
+  font-family:var(--sans);font-size:13.5px;color:var(--ink);
+  background:#fff;border:1.5px solid var(--border);border-radius:4px;
+  padding:.5rem .65rem;transition:border-color .15s;outline:none;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:80px;line-height:1.55;}
+.field textarea.tall{min-height:110px;}
+
+/* ══ CHECKBOX GROUP ══ */
+.check-group{display:flex;flex-wrap:wrap;gap:.5rem .75rem;margin-top:.15rem;}
+.check-item{display:flex;align-items:center;gap:.4rem;font-size:13px;color:var(--ink-2);cursor:pointer;}
+.check-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
+
+/* ══ PARTY CARD ══ */
+.party-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.party-card{background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:1rem;}
+.party-card-label{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:.75rem;}
+.party-card .field+.field{margin-top:.65rem;}
+
+/* ══ OUTCOME BLOCK ══ */
+.outcome-options{display:flex;flex-direction:column;gap:.55rem;margin-top:.15rem;}
+.outcome-item{display:flex;align-items:flex-start;gap:.5rem;font-size:13px;color:var(--ink-2);}
+.outcome-item input[type=radio]{margin-top:2px;accent-color:var(--accent);}
+
+/* ══ SIGNATURE ROW ══ */
+.sig-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-top:.25rem;}
+.sig-block{display:flex;flex-direction:column;gap:.4rem;}
+.sig-line{border:none;border-bottom:1.5px solid var(--border);height:38px;background:transparent;width:100%;}
+.sig-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;color:var(--ink-3);}
+
+/* ══ NOTICE BOX ══ */
+.notice{background:var(--accent-2);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:.65rem .85rem;font-size:12px;color:var(--ink-2);line-height:1.55;margin-top:.5rem;}
+
+/* ══ RECORD ID BAR ══ */
+.record-bar{background:var(--paper-2);border:1.5px solid var(--border);border-radius:6px;padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.record-bar-left{display:flex;align-items:center;gap:1.5rem;}
+.record-meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
+.record-meta strong{color:var(--ink-2);}
+.record-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:#fff;padding:.25rem .6rem;border-radius:3px;}
+
+/* ══ BUTTONS ══ */
+.btn-row{display:flex;justify-content:flex-end;gap:.75rem;margin-top:2.5rem;padding-top:1.25rem;border-top:1.5px solid var(--border);}
+.btn{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.55rem 1.2rem;border-radius:4px;border:none;cursor:pointer;transition:opacity .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-secondary{background:var(--paper-3);color:var(--ink-2);}
+.btn:hover{opacity:.85;}
+
+/* ══ PRINT ══ */
+@media print {
+  header{display:none;}
+  .print-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:.75rem;border-bottom:2px solid #1a1a18;margin-bottom:1.5rem;}
+  .print-header-left .co{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:.03em;}
+  .print-header-left .co span{color:#c8410a;}
+  .print-header-right{font-family:var(--mono);font-size:10px;color:#666;text-align:right;line-height:1.6;}
+  .btn-row{display:none;}
+  body{background:#fff;}
+  main{margin:0;padding:1cm 1.5cm;}
+  .field input,.field select,.field textarea{border-color:#bbb;background:#fafafa;}
+  .record-badge{background:#1a1a18!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .section-label{color:#c8410a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .notice{background:#f0e8d8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+@media(max-width:640px){
+  .grid-2,.party-cards,.sig-row,.grid-3{grid-template-columns:1fr;}
+  .span-2{grid-column:span 1;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="index.html" style="text-decoration:none;color:rgba(255,255,255,.4);font-size:14px;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.4)'" title="Back to Dashboard">←</a>
+    <div class="logo-company">Mi-<span>Kin</span> Creations</div>
+  </div>
+  <span class="header-tag">HR · Employee Mediation Record</span>
+</header>
+
+<main>
+
+  <!-- Print header (only shows when printed) -->
+  <div class="print-header">
+    <div class="print-header-left">
+      <div class="co">Mi-<span>Kin</span> Creations</div>
+      <div style="font-size:11px;color:#666;margin-top:2px;">Human Resources — Confidential</div>
+    </div>
+    <div class="print-header-right">
+      Employee Mediation Record<br>
+      Form HR-MED-01
+    </div>
+  </div>
+
+  <div class="form-title-block">
+    <h1>Employee Mediation Record</h1>
+    <p>Confidential — Retain in employee HR file. Complete all applicable sections at time of mediation.</p>
+  </div>
+
+  <!-- Record ID bar -->
+  <div class="record-bar">
+    <div class="record-bar-left">
+      <div class="record-meta">Record #&nbsp;<strong><input type="text" style="border:none;background:transparent;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink);width:90px;padding:0;outline:none;" placeholder="MED-0001"></strong></div>
+      <div class="record-meta">Date Filed&nbsp;<strong><input type="date" style="border:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--ink);padding:0;outline:none;"></strong></div>
+    </div>
+    <div class="record-badge">Confidential</div>
+  </div>
+
+  <!-- ── SECTION 1: INCIDENT INFO ── -->
+  <div class="section">
+    <div class="section-label">01 — Incident Information</div>
+    <div class="grid-3" style="margin-bottom:1rem;">
+      <div class="field">
+        <label>Date of Incident</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label>Time of Incident</label>
+        <input type="time">
+      </div>
+      <div class="field">
+        <label>Location / Area</label>
+        <input type="text" placeholder="e.g. Production Floor, Break Room">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Nature of Dispute</label>
+        <select>
+          <option value="" disabled selected>Select category…</option>
+          <option>Interpersonal conflict</option>
+          <option>Workplace conduct</option>
+          <option>Work assignment / workload</option>
+          <option>Communication breakdown</option>
+          <option>Harassment / bullying (non-sexual)</option>
+          <option>Policy disagreement</option>
+          <option>Safety concern</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>How Was This Reported?</label>
+        <select>
+          <option value="" disabled selected>Select…</option>
+          <option>Employee came to manager directly</option>
+          <option>Observed by manager</option>
+          <option>Reported by a coworker</option>
+          <option>Anonymous report</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: PARTIES ── -->
+  <div class="section">
+    <div class="section-label">02 — Parties Involved</div>
+    <div class="party-cards">
+      <div class="party-card">
+        <div class="party-card-label">Party A</div>
+        <div class="field">
+          <label>Employee Name</label>
+          <input type="text" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Job Title / Role</label>
+          <input type="text" placeholder="e.g. Cabinet Maker">
+        </div>
+        <div class="field">
+          <label>Department</label>
+          <input type="text" placeholder="e.g. Assembly, Finishing">
+        </div>
+        <div class="field">
+          <label>Time at Company</label>
+          <input type="text" placeholder="e.g. 2 years">
+        </div>
+      </div>
+      <div class="party-card">
+        <div class="party-card-label">Party B</div>
+        <div class="field">
+          <label>Employee Name</label>
+          <input type="text" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Job Title / Role</label>
+          <input type="text" placeholder="e.g. Cabinet Maker">
+        </div>
+        <div class="field">
+          <label>Department</label>
+          <input type="text" placeholder="e.g. Assembly, Finishing">
+        </div>
+        <div class="field">
+          <label>Time at Company</label>
+          <input type="text" placeholder="e.g. 2 years">
+        </div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Were Any Witnesses Present?</label>
+      <input type="text" placeholder="Names of any witnesses, or 'None'">
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: MEDIATION ── -->
+  <div class="section">
+    <div class="section-label">03 — Mediation Session</div>
+    <div class="grid-3" style="margin-bottom:1rem;">
+      <div class="field">
+        <label>Mediation Date</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label>Start Time</label>
+        <input type="time">
+      </div>
+      <div class="field">
+        <label>End Time</label>
+        <input type="time">
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:1rem;">
+      <div class="field">
+        <label>Mediator Name</label>
+        <input type="text" placeholder="Name of manager / HR mediating">
+      </div>
+      <div class="field">
+        <label>Mediator Title</label>
+        <input type="text" placeholder="e.g. Shop Manager">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:1rem;">
+      <label>Summary of Issue (as presented by each party)</label>
+      <textarea class="tall" placeholder="Brief, neutral summary of each party's position as stated during the session…"></textarea>
+    </div>
+    <div class="field">
+      <label>Key Points Discussed</label>
+      <textarea placeholder="Topics raised, concerns acknowledged, common ground found…"></textarea>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: OUTCOME ── -->
+  <div class="section">
+    <div class="section-label">04 — Outcome &amp; Resolution</div>
+    <div class="field" style="margin-bottom:1rem;">
+      <label>Resolution Status</label>
+      <div class="outcome-options">
+        <label class="outcome-item"><input type="radio" name="outcome" value="resolved"> Fully resolved — both parties reached agreement</label>
+        <label class="outcome-item"><input type="radio" name="outcome" value="partial"> Partially resolved — ongoing monitoring required</label>
+        <label class="outcome-item"><input type="radio" name="outcome" value="unresolved"> Unresolved — escalation needed</label>
+        <label class="outcome-item"><input type="radio" name="outcome" value="referred"> Referred to external HR / legal</label>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:1rem;">
+      <label>Agreement / Action Items</label>
+      <textarea class="tall" placeholder="Specific commitments made by each party, behavioral expectations, or corrective actions agreed upon…"></textarea>
+    </div>
+    <div class="field" style="margin-bottom:1rem;">
+      <label>Follow-Up Actions Required</label>
+      <textarea placeholder="Check-in dates, additional training, policy review, etc. Leave blank if none."></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Follow-Up Date (if applicable)</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label>Escalation Path (if unresolved)</label>
+        <input type="text" placeholder="e.g. Owner, external HR, legal">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: DISCIPLINARY ── -->
+  <div class="section">
+    <div class="section-label">05 — Disciplinary Action (if applicable)</div>
+    <div class="field" style="margin-bottom:1rem;">
+      <label>Was Any Disciplinary Action Taken?</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox"> Verbal warning</label>
+        <label class="check-item"><input type="checkbox"> Written warning</label>
+        <label class="check-item"><input type="checkbox"> Performance improvement plan</label>
+        <label class="check-item"><input type="checkbox"> Suspension</label>
+        <label class="check-item"><input type="checkbox"> Termination</label>
+        <label class="check-item"><input type="checkbox"> No action taken</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Disciplinary Notes</label>
+      <textarea placeholder="Details of any disciplinary action, or explanation if no action was taken…"></textarea>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6: ADDITIONAL NOTES ── -->
+  <div class="section">
+    <div class="section-label">06 — Additional Notes</div>
+    <div class="field">
+      <label>Mediator Notes / Observations</label>
+      <textarea class="tall" placeholder="Any additional context, patterns observed, environmental factors, or mediator impressions not captured above…"></textarea>
+    </div>
+    <div class="notice">
+      This record is confidential and should be filed in each involved employee's HR file. Do not share with other employees. If any safety concern is raised in the course of mediation, report per standard safety protocol immediately.
+    </div>
+  </div>
+
+  <!-- ── SECTION 7: SIGNATURES ── -->
+  <div class="section">
+    <div class="section-label">07 — Acknowledgment &amp; Signatures</div>
+    <p style="font-size:12.5px;color:var(--ink-3);margin-bottom:1rem;line-height:1.55;">Signatures indicate that each party acknowledges this record reflects an accurate summary of the mediation session. Signing does not necessarily indicate agreement with all points.</p>
+    <div class="sig-row">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Party A Signature</div>
+        <div class="field" style="margin-top:.5rem;"><input type="date" style="font-size:12px;padding:.3rem .5rem;"></div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Party B Signature</div>
+        <div class="field" style="margin-top:.5rem;"><input type="date" style="font-size:12px;padding:.3rem .5rem;"></div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Mediator Signature</div>
+        <div class="field" style="margin-top:.5rem;"><input type="date" style="font-size:12px;padding:.3rem .5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="window.location.reload()">Clear Form</button>
+    <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+  </div>
+
+</main>
+
+</body>
+</html>
